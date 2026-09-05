@@ -1,0 +1,2492 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goxik</title>
+<style>
+  :root{
+    --purple:#6c47ff;
+    --purple-light:#efeaff;
+    --text-dark:#111214;
+    --text-gray:#6b7280;
+    --text-light-gray:#9ca3af;
+    --border:#e8e8ec;
+    --bg:#ffffff;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  html, body{ overflow-x:hidden; width:100%; }
+  body{
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-dark);
+    background: #fff;
+  }
+  a{ text-decoration:none; color:inherit; }
+  button{ font-family:inherit; cursor:pointer; }
+
+  /* No blue focus/click outline or shadow on any interactive element;
+     all clickable elements stay smoothly tappable without a browser
+     default focus ring or highlight color. */
+  button, a, input, [role="button"], [tabindex]{
+    outline:none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:focus, a:focus, input:focus, [role="button"]:focus, [tabindex]:focus,
+  button:focus-visible, a:focus-visible, input:focus-visible, [role="button"]:focus-visible{
+    outline:none;
+    box-shadow:none;
+  }
+  button::-moz-focus-inner{ border:0; }
+
+  .icon-btn{
+    display:flex; align-items:center; justify-content:center;
+    width:44px; height:44px;
+    border-radius:10px;
+    border:none;
+    background:transparent;
+    flex-shrink:0;
+  }
+  .icon-btn svg{ width:22px; height:22px; }
+
+  .avatar{
+    width:44px; height:44px;
+    border-radius:50%;
+    overflow:hidden;
+    flex-shrink:0;
+    background:#1f2430;
+  }
+  .avatar img{ width:100%; height:100%; object-fit:cover; }
+  .avatar svg{ width:100%; height:100%; display:block; }
+
+  .avatar-wrap{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-shrink:0;
+    cursor:pointer;
+  }
+  .avatar-chevron{
+    width:16px;
+    height:16px;
+    flex-shrink:0;
+  }
+
+  .pill{
+    display:inline-block;
+    padding:6px 14px;
+    border-radius:999px;
+    border:1px solid #d8d2ff;
+    color: var(--purple);
+    font-size:13px;
+    font-weight:500;
+    background:#fff;
+  }
+
+  .stat{
+    display:flex; align-items:center; gap:6px;
+    color:#4b5563;
+    font-size:14px;
+    background:none;
+    border:none;
+  }
+  .stat svg{ width:18px; height:18px; }
+
+  .post-card{
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:24px;
+  }
+  .post-head{
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:16px;
+  }
+  .post-user{ display:flex; flex-direction:column; }
+  .post-user .name-row{ display:flex; align-items:center; gap:6px; font-weight:700; font-size:17px; }
+  .post-user .handle-row{ color: var(--text-light-gray); font-size:14px; }
+  .verified{ width:16px; height:16px; flex-shrink:0; }
+  .post-menu{ margin-left:auto; color:#9ca3af; font-size:20px; letter-spacing:2px; }
+
+  .post-text{ font-size:16px; line-height:1.5; margin-bottom:16px; color:#1a1a1e; }
+  .post-text.no-tags{ margin-bottom:34px; }
+
+  .post-tags{ display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+
+  .post-stats{ display:flex; align-items:center; gap:28px; }
+  .post-stats .spacer{ flex:1; }
+  .stat{ transition: color .15s ease; }
+  .stat:active{ transform: scale(0.94); }
+  .like-btn.liked{ color:#e0245e; }
+  .like-btn.liked svg{ fill:#e0245e; stroke:#e0245e; }
+  .bookmark-btn.bookmarked{ color:var(--purple); }
+  .bookmark-btn.bookmarked svg{ fill:var(--purple); stroke:var(--purple); }
+  .comment-btn.open-active{ color:var(--purple); }
+
+  .comment-box{
+    display:none;
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px solid var(--border);
+  }
+  .comment-box.open{ display:block; }
+  .comment-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:10px; }
+  .comment-item{ font-size:13.5px; line-height:1.4; color:#374151; background:#f6f6f8; border-radius:10px; padding:8px 12px; }
+  .comment-item-author{ font-weight:700; color:#111; margin-right:4px; }
+  .comment-form{ display:flex; gap:8px; }
+  .comment-input{
+    flex:1;
+    border:1px solid var(--border);
+    border-radius:999px;
+    padding:9px 14px;
+    font-size:13.5px;
+    font-family:inherit;
+    outline:none;
+  }
+  .comment-input:focus{ border-color:var(--purple); }
+  .comment-send{
+    border:none;
+    background:var(--purple);
+    color:#fff;
+    font-weight:700;
+    font-size:13px;
+    border-radius:999px;
+    padding:0 18px;
+  }
+
+  /* ============ MOBILE LAYOUT ============ */
+  .mobile-view{ display:block; max-width:430px; margin:0 auto; font-size:14px; }
+
+  .mobile-view .icon-btn{ width:36px; height:36px; border-radius:9px; }
+  .mobile-view .icon-btn svg{ width:19px; height:19px; }
+  .mobile-view .m-header .avatar,
+  .mobile-view .post-head .avatar{ width:36px; height:36px; }
+  .mobile-view .pill{ padding:4px 11px; font-size:11.5px; }
+  .mobile-view .stat{ font-size:12.5px; gap:5px; }
+  .mobile-view .stat svg{ width:15px; height:15px; }
+  .mobile-view .post-card{ padding:16px; border-radius:13px; }
+  .mobile-view .post-head{ gap:10px; margin-bottom:12px; }
+  .mobile-view .post-user .name-row{ font-size:14.5px; gap:5px; }
+  .mobile-view .post-user .handle-row{ font-size:12px; }
+  .mobile-view .verified{ width:14px; height:14px; }
+  .mobile-view .post-menu{ font-size:18px; }
+  .mobile-view .post-text{ font-size:14.5px; margin-bottom:12px; }
+  .mobile-view .post-text.no-tags{ margin-bottom:22px; }
+  .mobile-view .post-tags{ gap:8px; margin-bottom:14px; }
+  .mobile-view .post-stats{ gap:22px; }
+  .mobile-view .comment-box{ margin-top:10px; padding-top:10px; }
+  .mobile-view .comment-item{ font-size:12px; padding:7px 10px; }
+  .mobile-view .comment-input{ font-size:12px; padding:7px 12px; }
+  .mobile-view .comment-send{ font-size:11.5px; padding:0 14px; }
+
+  .m-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 16px 8px 16px;
+  }
+  .m-header-left{ display:flex; align-items:center; gap:12px; }
+  .m-logo{ font-size:21px; font-weight:800; color: var(--purple); }
+  .m-header-right{ display:flex; align-items:center; gap:6px; }
+  .m-compose-btn{
+    border:1.5px solid var(--purple);
+    border-radius:9px;
+  }
+  .m-compose-btn svg{ stroke: var(--purple); }
+  .mobile-view .m-compose-btn{
+    border-width:1px;
+    border-radius:7px;
+    width:28px;
+    height:28px;
+  }
+  .mobile-view .m-compose-btn svg{ width:14px; height:14px; }
+
+  .m-tabs{
+    display:flex; gap:22px;
+    padding:10px 16px 0 16px;
+    border-bottom:1px solid var(--border);
+  }
+  .m-tab{
+    font-size:14px; font-weight:600; color:#9ca3af;
+    padding-bottom:11px;
+    position:relative;
+    border:none; background:none; font-family:inherit; cursor:pointer;
+  }
+  .m-tab.active{ color: var(--purple); }
+  .m-tab.active::after{
+    content:"";
+    position:absolute; bottom:-1px; left:0; right:0;
+    height:2px; background:var(--purple);
+    border-radius:2px;
+  }
+
+  .m-composer{
+    margin:14px 16px;
+    padding:13px 15px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    color:#9ca3af;
+    font-size:13.5px;
+  }
+
+  .m-feed{ display:flex; flex-direction:column; gap:14px; padding: 0 16px 84px 16px; }
+
+  .m-bottomnav{
+    position:fixed; bottom:0; left:0; right:0;
+    max-width:430px; margin:0 auto;
+    background:#fff;
+    border-top:1px solid var(--border);
+    display:flex;
+    padding:8px 0 10px 0;
+  }
+  .m-nav-item{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    font-size:10px; font-weight:600;
+    color:#9ca3af;
+  }
+  .m-nav-item svg{ width:19px; height:19px; }
+  .m-nav-item.active{ color: var(--purple); }
+  .m-nav-item.active svg{ stroke:var(--purple); }
+
+  /* ============ DESKTOP LAYOUT ============ */
+  .desktop-view{ display:none; }
+
+  /* Full-bleed top bar: sits ABOVE the 3-column shell and spans the
+     entire browser width edge-to-edge, so the profile/bell/pencil
+     cluster sits flush against the true right edge of the viewport. */
+  .d-topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    width:100%;
+    height:64px;
+    padding:0 32px;
+    border-bottom:1px solid #ececec;
+  }
+  .gh-tabs{ display:flex; align-items:center; gap:28px; height:64px; }
+  .gh-tab{
+    position:relative; height:100%; display:flex; align-items:center;
+    font-size:14px; font-weight:600; color:#8a8a8f; cursor:pointer; white-space:nowrap;
+    border:none; background:none; padding:0; font-family:inherit;
+    transition: color .15s ease;
+  }
+  .gh-tab:hover{ color:#5b3df5; }
+  .gh-tab.active{ color:#5b3df5; }
+  .gh-tab.active::after{
+    content:""; position:absolute; left:0; right:0; bottom:0;
+    height:2px; background:#5b3df5; border-radius:2px 2px 0 0;
+  }
+  .gh-right{ display:flex; align-items:center; gap:14px; flex-shrink:0; }
+
+  .gh-search{
+    display:flex; align-items:center; gap:8px;
+    width:220px; height:36px; padding:0 10px;
+    border:1px solid #e3e3e6; border-radius:8px;
+    color:#a3a3aa; background:#fff;
+  }
+  .gh-search svg{ flex-shrink:0; color:#a3a3aa; }
+  .gh-search input{
+    border:none; outline:none; flex:1; min-width:0;
+    font-size:13px; color:#3f3f46; background:transparent; font-family:inherit;
+  }
+  .gh-search input::placeholder{ color:#b5b5bb; }
+
+  .gh-icon-btn{
+    width:36px; height:36px; border-radius:8px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; color:#3f3f46; background:transparent; border:1px solid transparent;
+    font-family:inherit; transition: background .15s ease, transform .1s ease;
+  }
+  .gh-icon-btn:hover{ background:#f5f5f7; }
+  .gh-icon-btn:active{ transform: scale(0.93); }
+  .gh-icon-btn.gh-edit{ color:#5b3df5; border:1px solid #dcd4fd; }
+  .gh-icon-btn.gh-edit:hover{ background:#f4f1ff; }
+
+  .gh-profile{
+    display:flex; align-items:center; gap:4px; cursor:pointer; padding:2px; border-radius:20px; flex-shrink:0;
+    border:none; background:transparent; font-family:inherit;
+    transition: background .15s ease, transform .1s ease;
+  }
+  .gh-profile:hover{ background:#f5f5f7; }
+  .gh-profile:active{ transform: scale(0.96); }
+  .gh-avatar{ width:32px; height:32px; border-radius:50%; overflow:hidden; flex-shrink:0; background:#222; }
+  .gh-avatar svg{ width:100%; height:100%; display:block; }
+  .gh-chevron{ color:#8a8a8f; flex-shrink:0; }
+
+  .d-shell{
+    display:grid;
+    grid-template-columns: 232px minmax(280px,1fr) 280px;
+    width:100%;
+    min-height:calc(100vh - 64px);
+  }
+
+  .d-sidebar{
+    padding:22px 16px;
+    display:flex; flex-direction:column;
+    border-right:1px solid var(--border);
+    min-width:0;
+  }
+  .d-logo{ font-size:26px; font-weight:800; color:var(--purple); margin-bottom:34px; }
+
+  .d-nav{ display:flex; flex-direction:column; gap:4px; margin-bottom:24px; }
+  .d-nav-item{
+    display:flex; align-items:center; gap:14px;
+    padding:12px 14px;
+    border-radius:12px;
+    font-size:15px; font-weight:500;
+    color:#374151;
+  }
+  .d-nav-item svg{ width:21px; height:21px; flex-shrink:0; }
+  .d-nav-item.active{ background: var(--purple-light); color: var(--purple); font-weight:700; }
+  .d-nav-item.active svg{ stroke: var(--purple); }
+
+  .d-new-goxik{
+    margin-top:auto;
+    background: var(--purple);
+    color:#fff;
+    border:none;
+    border-radius:12px;
+    padding:14px;
+    font-size:15px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+
+  .d-premium{
+    margin-top:20px;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:16px;
+    font-size:13px;
+    color:#4b5563;
+    line-height:1.5;
+  }
+  .d-premium .title{ display:flex; align-items:center; gap:6px; font-weight:700; color:#111; font-size:14px; margin-bottom:6px; }
+  .d-premium a{ color:var(--purple); font-weight:700; display:inline-flex; align-items:center; gap:4px; margin-top:8px; }
+
+  .d-footer{ margin-top:24px; font-size:12px; color:#9ca3af; line-height:1.6; }
+
+  .d-main{ padding:24px 32px; border-right:1px solid var(--border); min-width:0; }
+
+  @media (min-width:900px) and (max-width:1150px){
+    .d-sidebar{ padding:22px 10px; }
+    .d-nav-item{ padding:12px 8px; gap:10px; font-size:14px; }
+    .d-nav-item svg{ width:19px; height:19px; }
+    .d-main{ padding:20px 16px; }
+    .d-side{ padding:20px 12px; }
+    .d-topbar{ padding:0 16px; }
+  }
+
+  .d-composer{
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:20px 22px;
+    color:#9ca3af;
+    font-size:16px;
+    margin-bottom:22px;
+  }
+
+  .d-feed{ display:flex; flex-direction:column; gap:18px; }
+
+  .d-side{ padding:22px 16px; display:flex; flex-direction:column; gap:18px; min-width:0; }
+  .side-card{ border:1px solid var(--border); border-radius:14px; padding:18px 20px; }
+  .side-card-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:8px; }
+  .side-card-head .h{ display:flex; align-items:center; gap:8px; font-weight:700; font-size:15px; white-space:nowrap; }
+  .side-card-head .h svg{ width:18px; height:18px; }
+  .side-card-head .view-all{ font-size:13px; color:var(--purple); font-weight:600; white-space:nowrap; flex-shrink:0; }
+
+  .trend-row{ display:flex; align-items:center; justify-content:space-between; padding:8px 0; font-size:14px; gap:6px; }
+  .trend-row .num{ color:#9ca3af; width:18px; flex-shrink:0; }
+  .trend-row .tag{ color:var(--purple); font-weight:600; flex:1; margin-left:6px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .trend-row .count{ color:#9ca3af; font-size:13px; white-space:nowrap; flex-shrink:0; }
+
+  .connect-row{ display:flex; align-items:center; gap:10px; padding:8px 0; }
+  .connect-row .avatar{ width:36px; height:36px; }
+  .connect-row .info{ flex:1; min-width:0; }
+  .connect-row .n{ font-size:14px; font-weight:700; }
+  .connect-row .h{ font-size:12px; color:#9ca3af; }
+  .follow-btn{
+    border:1px solid var(--purple);
+    color:var(--purple);
+    background:#fff;
+    border-radius:8px;
+    padding:6px 14px;
+    font-size:13px; font-weight:700;
+    flex-shrink:0;
+  }
+
+  .daily-prompt-q{ font-size:14px; color:#374151; line-height:1.5; margin-bottom:14px; }
+  .goxik-now-btn{
+    background:var(--purple); color:#fff; border:none; border-radius:8px;
+    padding:9px 16px; font-size:13px; font-weight:700;
+  }
+
+  .d-links{ display:flex; gap:18px; font-size:12px; color:#9ca3af; flex-wrap:wrap; }
+  .d-copyright{ font-size:12px; color:#9ca3af; margin-top:6px; }
+
+  /* ============ DRAWER (mobile hamburger menu) ============ */
+  .overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.4);
+    opacity:0; pointer-events:none; transition:opacity .25s ease;
+    z-index:50;
+  }
+  .overlay.open{ opacity:1; pointer-events:auto; }
+
+  .drawer{
+    position:fixed; top:0; left:0; bottom:0;
+    width:82%; max-width:300px;
+    background:#fff;
+    transform: translateX(-100%);
+    transition: transform .28s ease;
+    z-index:51;
+    overflow-y:auto;
+    box-shadow: 2px 0 24px rgba(0,0,0,0.08);
+  }
+  .drawer.open{ transform: translateX(0); }
+  .drawer-inner{ padding:24px 20px; display:flex; flex-direction:column; min-height:100%; }
+  .drawer-close{ margin-left:auto; margin-bottom:18px; }
+
+  @media (min-width:900px){
+    .mobile-view{ display:none; }
+    .desktop-view{ display:block; }
+  }
+
+  /* ===================== UPLOAD BUTTON + SHEET ===================== */
+  .upload-btn svg{ stroke:#111; }
+  .gh-icon-btn.upload-btn{ color:#3f3f46; }
+
+  .upload-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.45);
+    z-index:300; opacity:0; pointer-events:none; transition:opacity .2s ease;
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  .upload-overlay.open{ opacity:1; pointer-events:auto; }
+  @media (min-width:640px){ .upload-overlay{ align-items:center; } }
+
+  .upload-sheet{
+    width:100%; max-width:460px; max-height:88vh; overflow-y:auto;
+    background:#fff; border-radius:20px 20px 0 0;
+    padding:18px 18px calc(env(safe-area-inset-bottom,0px) + 18px) 18px;
+    transform:translateY(100%); transition:transform .28s cubic-bezier(.2,.9,.3,1);
+  }
+  .upload-overlay.open .upload-sheet{ transform:translateY(0); }
+  @media (min-width:640px){
+    .upload-sheet{ border-radius:20px; max-height:80vh; }
+  }
+  .upload-sheet-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .upload-sheet-title{ font-size:17px; font-weight:800; }
+  .upload-sheet-close{ width:32px; height:32px; border-radius:50%; border:none; background:#f2f2f5; font-size:18px; color:#555; }
+
+  .upload-preview-row{ display:flex; gap:8px; overflow-x:auto; margin-bottom:16px; padding-bottom:4px; }
+  .upload-preview-thumb{ position:relative; width:76px; height:100px; flex-shrink:0; border-radius:10px; overflow:hidden; background:#111; }
+  .upload-preview-thumb video{ width:100%; height:100%; object-fit:cover; }
+  .upload-preview-thumb .rm{ position:absolute; top:3px; right:3px; width:19px; height:19px; border-radius:50%; background:rgba(0,0,0,0.6); color:#fff; font-size:12px; line-height:19px; text-align:center; border:none; }
+
+  .upload-field{ margin-bottom:14px; }
+  .upload-field label{ display:block; font-size:13px; font-weight:700; color:#374151; margin-bottom:6px; }
+  .upload-field input[type="text"], .upload-field textarea, .upload-field select{
+    width:100%; border:1px solid var(--border); border-radius:10px;
+    padding:11px 13px; font-size:14px; font-family:inherit; color:#111; outline:none; background:#fff;
+  }
+  .upload-field input[type="text"]:focus, .upload-field textarea:focus, .upload-field select:focus{ border-color:var(--purple); }
+  .upload-field textarea{ resize:vertical; min-height:64px; }
+
+  .upload-publish-btn{
+    width:100%; border:none; background:var(--purple); color:#fff;
+    font-size:15px; font-weight:800; border-radius:12px; padding:14px; margin-top:4px;
+  }
+  .upload-publish-btn:disabled{ opacity:.5; }
+
+  /* ===================== REELS VIEW (OCTYPE-style player) ===================== */
+  .reels-view{
+    position:fixed; inset:0; background:#000; z-index:250;
+    display:none; flex-direction:column;
+  }
+  .reels-view.open{ display:flex; }
+
+  .reels-topbar{
+    position:absolute; top:calc(env(safe-area-inset-top,0px) + 14px); left:16px; right:16px;
+    z-index:30; display:flex; align-items:center; justify-content:space-between;
+  }
+  .reels-icon-btn{
+    width:38px; height:38px; border-radius:50%;
+    background:rgba(20,20,24,0.42); border:1px solid rgba(255,255,255,0.14);
+    backdrop-filter:blur(14px) saturate(140%); -webkit-backdrop-filter:blur(14px) saturate(140%);
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .15s ease, background .15s ease;
+  }
+  .reels-icon-btn:active{ transform:scale(0.9); background:rgba(20,20,24,0.65); }
+  .reels-icon-btn svg{ width:46%; height:46%; stroke:#f5f5f7; }
+  .reels-heading{ color:#f5f5f7; font-weight:800; font-size:15px; }
+
+  .reels-scroll{ flex:1; overflow:hidden; position:relative; touch-action:none; }
+  .reels-track{ position:relative; will-change:transform; transform:translate3d(0,0,0); backface-visibility:hidden; }
+
+  .reel-comment-sheet{ position:fixed; inset:0; z-index:900; display:none; }
+  .reel-comment-sheet.open{ display:block; }
+  .reel-comment-sheet .rcs-backdrop{ position:absolute; inset:0; background:rgba(0,0,0,0.5); }
+  .reel-comment-sheet .rcs-panel{
+    position:absolute; left:0; right:0; bottom:0; max-height:65vh;
+    background:#fff; border-radius:18px 18px 0 0; padding:10px 16px 16px;
+    display:flex; flex-direction:column;
+  }
+  .reel-comment-sheet .rcs-handle{ width:36px; height:4px; border-radius:999px; background:#ddd; margin:4px auto 10px; flex-shrink:0; }
+  .reel-comment-sheet .rcs-title{ font-weight:800; font-size:14px; margin-bottom:10px; color:#111; flex-shrink:0; }
+  .reel-comment-sheet .comment-list{ overflow-y:auto; flex:1; margin-bottom:10px; }
+  .reel-comment-sheet .comment-form{ flex-shrink:0; }
+  .reel-item{
+    position:relative; width:100%; height:100dvh; overflow:hidden;
+    transform:translateZ(0); will-change:transform; backface-visibility:hidden; contain:layout style paint;
+    background:
+      radial-gradient(ellipse 90% 60% at 100% 30%, rgba(108,71,255,0.35), transparent 60%),
+      radial-gradient(ellipse 80% 55% at 15% 85%, rgba(60,20,120,0.3), transparent 55%),
+      linear-gradient(180deg,#0b0b0d 0%, #050505 100%);
+  }
+  .reel-item video{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; cursor:pointer; touch-action:pan-y; user-select:none; }
+  .reel-item .vignette{ position:absolute; inset:0; z-index:2; pointer-events:none;
+    background:linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 22%, transparent 50%, rgba(0,0,0,0.97) 100%); }
+
+  /* center play/pause icon */
+  .reel-center-play{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:clamp(60px,15vw,72px); height:clamp(60px,15vw,72px); border-radius:50%;
+    background:rgba(20,20,24,0.42); border:1px solid rgba(255,255,255,0.14);
+    backdrop-filter:blur(14px) saturate(140%); -webkit-backdrop-filter:blur(14px) saturate(140%);
+    display:flex; align-items:center; justify-content:center; z-index:8;
+    opacity:0; pointer-events:none; transition:opacity .2s ease, transform .15s ease;
+  }
+  .reel-center-play.show{ opacity:1; }
+  .reel-center-play svg{ width:36%; height:36%; fill:#fff; }
+
+  /* double-tap skip flash */
+  .reel-tap-flash{
+    position:absolute; top:0; bottom:0; width:42%; z-index:6;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:13px; font-weight:700; text-shadow:0 1px 6px rgba(0,0,0,0.7);
+    opacity:0; pointer-events:none;
+  }
+  .reel-tap-flash.left{ left:0; justify-content:flex-start; padding-left:18px; }
+  .reel-tap-flash.right{ right:0; justify-content:flex-end; padding-right:18px; }
+  .reel-tap-flash.playing{ animation:reelFlash .55s ease; }
+  @keyframes reelFlash{ 0%{opacity:1;} 100%{opacity:0;} }
+
+  /* progress bar */
+  .reel-progress-track{ position:absolute; left:0; right:0; bottom:0; height:16px; z-index:11; display:flex; align-items:flex-end; cursor:pointer; touch-action:none; }
+  .reel-progress-track::before{ content:''; position:absolute; left:0; right:0; bottom:0; height:2px; background:rgba(255,255,255,0.18); }
+  .reel-progress-fill{ position:relative; height:2px; width:0%; background:var(--purple); pointer-events:none; }
+  .reel-time-counter{ position:absolute; left:12px; bottom:8px; font-size:10.5px; font-weight:600; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,0.7); z-index:12; pointer-events:none; }
+
+  .reel-mute-btn{ position:absolute; top:calc(env(safe-area-inset-top,0px) + 16px); right:14px; z-index:15; width:36px; height:36px; border-radius:50%;
+    background:rgba(20,20,24,0.42); border:1px solid rgba(255,255,255,0.14);
+    backdrop-filter:blur(14px) saturate(140%); -webkit-backdrop-filter:blur(14px) saturate(140%);
+    display:flex; align-items:center; justify-content:center; }
+  .reel-mute-btn svg{ width:17px; height:17px; }
+
+  .reel-side-rail{ position:absolute; right:10px; bottom:46px; display:flex; flex-direction:column; align-items:center; gap:16px; z-index:10; }
+  .reel-rail-btn{ display:flex; flex-direction:column; align-items:center; gap:5px; background:none; border:none; color:#fff; }
+  .reel-rail-btn .icon-wrap{
+    width:clamp(40px,10vw,46px); height:clamp(40px,10vw,46px); border-radius:50%;
+    background:none; border:none;
+    backdrop-filter:none; -webkit-backdrop-filter:none;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .reel-rail-btn svg{ width:70%; height:70%; stroke:#fff; fill:none; stroke-width:2; filter:drop-shadow(0 1px 4px rgba(0,0,0,0.7)); }
+  .reel-rail-btn .cnt{ display:block; font-size:12px; font-weight:700; color:#fff; text-shadow:0 1px 4px rgba(0,0,0,0.7); }
+  .reel-rail-btn.liked .icon-wrap svg{ fill:#ff2d55; stroke:#ff2d55; }
+  .reel-rail-btn.saved .icon-wrap svg{ fill:#ffd60a; stroke:#ffd60a; }
+  .sound-rail-btn{ margin-top:-2px; }
+  .sound-rail-btn .icon-wrap.sound-disc-wrap{
+    width:34px; height:34px; background:#111; border:2px solid rgba(255,255,255,0.9);
+    backdrop-filter:none; -webkit-backdrop-filter:none; overflow:hidden;
+    animation: goxikDiscSpin 3s linear infinite; animation-play-state: paused;
+  }
+  .sound-rail-btn .icon-wrap.sound-disc-wrap.spinning{ animation-play-state: running; }
+  .sound-rail-btn .icon-wrap.sound-disc-wrap svg{ width:100%; height:100%; stroke:none; filter:none; }
+  @keyframes goxikDiscSpin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+
+  .reel-bottom-info{ position:absolute; left:14px; right:66px; bottom:16px; z-index:10; color:#fff; }
+  .reel-user-row{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .reel-user-row .av{ width:34px; height:34px; border-radius:50%; overflow:hidden; background:#222; flex-shrink:0; }
+  .reel-user-row .av img, .reel-user-row .av svg{ width:100%; height:100%; object-fit:cover; display:block; }
+  .reel-user-row .uname{ font-weight:800; font-size:14px; white-space:nowrap; min-width:0; }
+  .reel-follow-btn{
+    flex-shrink:0;
+    border:none;
+    background:#fff;
+    color:#111214;
+    font-weight:700;
+    font-size:12.5px;
+    padding:5px 14px;
+    border-radius:6px;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .reel-follow-btn:active{ transform:scale(0.96); }
+  .reel-follow-btn.following{
+    background:rgba(255,255,255,0.12);
+    color:#fff;
+    border:1px solid rgba(255,255,255,0.55);
+    padding:4px 13px;
+  }
+  .reel-bottom-info .title{ font-weight:800; font-size:15px; margin-bottom:4px; }
+  .reel-bottom-info .desc{ font-size:13px; color:rgba(255,255,255,0.85); margin-bottom:6px; line-height:1.4; }
+  .reel-bottom-info .tags{ font-size:12.5px; color:#c9b8ff; }
+  .reel-bottom-info .priv{ display:inline-flex; align-items:center; gap:4px; font-size:11px; background:rgba(255,255,255,0.15); padding:2px 8px; border-radius:999px; margin-bottom:6px; }
+
+  .reels-empty{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; color:#9ca3af; text-align:center; padding:0 30px; }
+  .reels-empty svg{ width:44px; height:44px; stroke:#555; }
+
+  /* ===================== PROFILE VIEW ===================== */
+  .profile-view{
+    position:fixed; inset:0; background:#fff; z-index:220;
+    display:none; overflow-y:auto;
+  }
+  .profile-view.open{ display:block; }
+  .profile-view-top{ display:flex; align-items:center; gap:14px; padding:16px; border-bottom:1px solid var(--border); position:sticky; top:0; background:#fff; z-index:5; }
+  .profile-view-top .pv-back{ width:34px; height:34px; border-radius:50%; background:#f2f2f5; border:none; display:flex; align-items:center; justify-content:center; }
+  .profile-view-top .pv-back svg{ width:19px; height:19px; }
+  .profile-view-top .pv-title{ font-size:17px; font-weight:800; }
+  .pv-body{ padding:22px 18px; max-width:520px; margin:0 auto; }
+  .pv-avatar{ width:84px; height:84px; border-radius:50%; overflow:hidden; margin:0 auto 12px auto; background:#1f2430; }
+  .pv-name{ font-size:20px; font-weight:800; text-align:center; }
+  .pv-handle{ font-size:13.5px; color:#9ca3af; text-align:center; margin-bottom:16px; }
+  .pv-stats{ display:flex; justify-content:center; gap:28px; margin-bottom:20px; }
+  .pv-stats .s{ text-align:center; }
+  .pv-stats .n{ font-weight:800; font-size:16px; }
+  .pv-stats .l{ font-size:12px; color:#9ca3af; }
+  .pv-section-title{ font-size:14px; font-weight:800; margin:18px 0 10px 0; }
+  .pv-setup-note{ font-size:13px; color:#6b7280; text-align:center; margin-bottom:18px; line-height:1.5; }
+  .pv-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+  .pv-grid .cell{ position:relative; aspect-ratio:9/16; border-radius:10px; overflow:hidden; background:#111; }
+  .pv-grid .cell video{ width:100%; height:100%; object-fit:cover; }
+  .pv-grid .cell .lock{ position:absolute; top:6px; right:6px; width:18px; height:18px; }
+  .pv-empty{ font-size:13px; color:#9ca3af; text-align:center; padding:20px 0; }
+
+  /* ===================== SOUND VIEW (TikTok-style sound page) ===================== */
+  .sound-view{
+    position:fixed; inset:0; background:#fff; z-index:280;
+    display:none; flex-direction:column;
+  }
+  .sound-view.open{ display:flex; }
+  .sv-top{
+    display:flex; align-items:center; gap:10px; flex-shrink:0;
+    padding:calc(env(safe-area-inset-top,0px) + 14px) 16px 12px 16px;
+    border-bottom:1px solid var(--border);
+  }
+  .sv-back, .sv-share{
+    width:34px; height:34px; border-radius:50%; background:#f2f2f5; border:none;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .sv-back svg{ width:18px; height:18px; }
+  .sv-share svg{ width:17px; height:17px; }
+  .sv-search{
+    flex:1; display:flex; align-items:center; gap:8px;
+    background:#f2f2f5; border-radius:999px; padding:9px 14px; min-width:0;
+  }
+  .sv-search svg{ width:16px; height:16px; flex-shrink:0; color:#9ca3af; }
+  .sv-search input{ border:none; background:none; outline:none; font-size:13.5px; flex:1; min-width:0; font-family:inherit; color:#111; }
+  .sv-search input::placeholder{ color:#9ca3af; }
+
+  .sv-body{ flex:1; overflow-y:auto; padding:24px 18px 24px 18px; max-width:520px; margin:0 auto; width:100%; }
+  .sv-avatar-wrap{ display:flex; justify-content:center; margin-bottom:14px; }
+  .sv-avatar{ width:80px; height:80px; border-radius:50%; position:relative; }
+  .sv-avatar .inner{
+    width:100%; height:100%; border-radius:50%; overflow:hidden; background:#1f2430;
+    border:3px solid var(--purple);
+    animation: goxikDiscSpin 3s linear infinite; animation-play-state: paused;
+  }
+  .sv-avatar .inner.spinning{ animation-play-state: running; }
+  .sv-avatar .inner svg{ width:100%; height:100%; }
+  .sv-play{
+    position:absolute; right:-2px; bottom:-2px; width:26px; height:26px; border-radius:50%;
+    background:#fff; border:1px solid var(--border); display:flex; align-items:center; justify-content:center;
+  }
+  .sv-play svg{ width:12px; height:12px; }
+  .sv-title{ font-size:19px; font-weight:800; text-align:center; margin-bottom:4px; }
+  .sv-owner{ font-size:14px; color:var(--purple); font-weight:600; text-align:center; margin-bottom:4px; cursor:pointer; }
+  .sv-count{ font-size:13px; color:var(--text-light-gray); text-align:center; margin-bottom:20px; }
+  .sv-save-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
+    padding:12px; border-radius:999px; border:none; background:#f2f2f5;
+    font-weight:700; font-size:14.5px; color:#111; margin-bottom:22px;
+  }
+  .sv-save-btn svg{ width:17px; height:17px; }
+  .sv-save-btn.saved{ background:var(--purple-light); color:var(--purple); }
+  .sv-save-btn.saved svg{ fill:var(--purple); }
+  .sv-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-bottom:20px; }
+  .sv-grid .cell{ position:relative; aspect-ratio:9/16; border-radius:10px; overflow:hidden; background:#111; cursor:pointer; }
+  .sv-grid .cell video{ width:100%; height:100%; object-fit:cover; }
+  .sv-empty{ font-size:13px; color:#9ca3af; text-align:center; padding:20px 0; grid-column:1/-1; }
+  .sv-bottom-bar{
+    display:flex; gap:10px; flex-shrink:0; padding:12px 18px calc(env(safe-area-inset-bottom,0px) + 12px) 18px;
+    background:#fff; border-top:1px solid var(--border);
+  }
+  .sv-addstory-btn{
+    flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
+    border-radius:999px; border:1px solid var(--border); background:#fff;
+    font-weight:700; font-size:13px; color:#111; padding:12px;
+  }
+  .sv-addstory-btn svg{ width:16px; height:16px; }
+  .sv-usesound-btn{
+    flex:1.4; display:flex; align-items:center; justify-content:center; gap:7px;
+    border-radius:999px; border:none; background:#e0245e; color:#fff;
+    font-weight:700; font-size:13px; padding:12px;
+  }
+  .sv-usesound-btn svg{ width:15px; height:15px; }
+  .sv-usesound-btn:disabled{ opacity:0.55; }
+
+  .upload-sound-banner{
+    display:flex; align-items:center; gap:8px; background:var(--purple-light); color:var(--purple);
+    font-size:12.5px; font-weight:600; padding:9px 12px; border-radius:10px; margin-bottom:14px;
+  }
+  .upload-sound-banner button{ margin-left:auto; background:none; border:none; color:var(--purple); font-size:16px; line-height:1; padding:0; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="avatarBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3a4a52"/>
+      <stop offset="1" stop-color="#12151c"/>
+    </linearGradient>
+    <symbol id="avatarArt" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="20" fill="url(#avatarBg)"/>
+      <path d="M20 34c6 0 9.5-3 9.5-3v-3.3c0-2-.6-3.6-2.6-4.6 1-1.4 1.6-3.2 1.6-5.1 0-4.9-3.7-8.5-8.5-8.5s-8.5 3.6-8.5 8.5c0 1.9.6 3.7 1.6 5.1-2 1-2.6 2.6-2.6 4.6V31s3.5 3 9.5 3z" fill="#d9a679"/>
+      <path d="M9 20.5C9 12 13.7 6 20 6s11 5.7 11 12.7c0-3-.9-5.4-2.7-6.9-1.1 1.7-3.4 2.9-6.6 2.9-3.6 0-6.6-1.5-8-3.8-1.7 2-2.7 5.3-2.7 9.6 0 1.6.2 2.9.5 4.1-1.6-1-2.5-2.8-2.5-4.1z" fill="#14161b"/>
+      <path d="M11.5 27.7c0-1.6.5-2.8 2-3.6-.5 1.5-.2 3.3.6 4.6-1.2.1-2-.3-2.6-1z" fill="#14161b"/>
+      <path d="M28.5 27.7c0-1.6-.5-2.8-2-3.6.5 1.5.2 3.3-.6 4.6 1.2.1 2-.3 2.6-1z" fill="#14161b"/>
+      <path d="M13 30.5c2.3 1.6 4.7 2.3 7 2.3s4.7-.7 7-2.3v3.6c0 .7-3.1 2.4-7 2.4s-7-1.7-7-2.4v-3.6z" fill="#3fa9a0"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ===================== MOBILE VIEW ===================== -->
+<div class="mobile-view">
+  <header class="m-header">
+    <div class="m-header-left">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="m-logo">Goxik</div>
+    </div>
+    <div class="m-header-right">
+      <button class="icon-btn upload-btn" id="mUploadBtn" title="Upload">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </button>
+      <button class="icon-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+      <div class="avatar" id="mAvatarBtn"><svg viewBox="0 0 40 40"><use href="#avatarArt"/></svg></div>
+    </div>
+  </header>
+
+  <nav class="m-tabs" id="mTabs">
+    <button type="button" class="m-tab active" data-tab="foryou">For You</button>
+    <button type="button" class="m-tab" data-tab="new">New</button>
+  </nav>
+
+  <div class="m-composer">What's on your mind?</div>
+
+  <div class="m-feed" id="mFeed"></div>
+
+  <nav class="m-bottomnav">
+    <div class="m-nav-item active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg>
+      Home
+    </div>
+    <div class="m-nav-item" id="mReelsNav">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>
+      Reels
+    </div>
+    <div class="m-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+      Messaging
+    </div>
+    <div class="m-nav-item">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16.5 13.5c2.5 0 4.5 2.2 4.5 5"/><circle cx="17" cy="7" r="2.8"/></svg>
+      Connect
+    </div>
+  </nav>
+</div>
+
+<!-- ===================== DRAWER (mobile menu) ===================== -->
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-inner">
+    <button class="icon-btn drawer-close" id="drawerClose">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="d-logo">Goxik</div>
+    <nav class="d-nav">
+      <a class="d-nav-item active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg>
+        Home
+      </a>
+      <a class="d-nav-item d-reels-nav">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>
+        Reels
+      </a>
+      <a class="d-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
+        Explore
+      </a>
+      <a class="d-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16.5 13.5c2.5 0 4.5 2.2 4.5 5"/><circle cx="17" cy="7" r="2.8"/></svg>
+        Connect
+      </a>
+      <a class="d-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Pulse
+      </a>
+      <a class="d-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><path d="m17 3 4 4-10 10H7v-4L17 3Z"/></svg>
+        Saved
+      </a>
+      <a class="d-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+        My Space
+      </a>
+      <a class="d-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/><path d="M9 9h1"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+        Drafts
+      </a>
+      <a class="d-nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+        Settings
+      </a>
+    </nav>
+    <button class="d-new-goxik">+ New Goxik</button>
+    <div class="d-premium">
+      <div class="title">✦ Goxik Premium</div>
+      More freedom.<br>More expression.
+      <a href="#">Upgrade Now →</a>
+    </div>
+    <div class="d-footer">© 2024 Goxik.<br>All rights reserved.</div>
+  </div>
+</div>
+
+<!-- ===================== DESKTOP VIEW ===================== -->
+<div class="desktop-view">
+
+  <!-- Full-width top bar: pinned edge-to-edge across the whole browser
+       window, so the search/pencil/bell/profile cluster sits flush
+       against the true right edge of the display. -->
+  <div class="d-topbar">
+    <div class="gh-tabs" id="ghTabs">
+      <button type="button" class="gh-tab active" data-tab="foryou">For You</button>
+      <button type="button" class="gh-tab" data-tab="new">New</button>
+    </div>
+    <div class="gh-right">
+      <div class="gh-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="ghSearchInput" placeholder="Search Goxik...">
+      </div>
+      <button type="button" class="gh-icon-btn upload-btn" id="dUploadBtn" title="Upload">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </button>
+      <button type="button" class="gh-icon-btn" id="ghBellBtn" title="Notifications">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+      </button>
+      <button type="button" class="gh-profile" id="ghProfileBtn">
+        <div class="gh-avatar"><svg viewBox="0 0 40 40"><use href="#avatarArt"/></svg></div>
+        <svg class="gh-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="d-shell">
+    <!-- Sidebar -->
+    <aside class="d-sidebar">
+      <div class="d-logo">Goxik</div>
+      <nav class="d-nav">
+        <a class="d-nav-item active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5 12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg>
+          Home
+        </a>
+        <a class="d-nav-item d-reels-nav">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="18" rx="3"/><path d="m10 9 5 3-5 3z"/></svg>
+          Reels
+        </a>
+        <a class="d-nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
+          Explore
+        </a>
+        <a class="d-nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5"/><path d="M16.5 13.5c2.5 0 4.5 2.2 4.5 5"/><circle cx="17" cy="7" r="2.8"/></svg>
+          Connect
+        </a>
+        <a class="d-nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Pulse
+        </a>
+        <a class="d-nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><path d="m17 3 4 4-10 10H7v-4L17 3Z"/></svg>
+          Saved
+        </a>
+        <a class="d-nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+          My Space
+        </a>
+        <a class="d-nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/><path d="M9 9h1"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+          Drafts
+        </a>
+        <a class="d-nav-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+          Settings
+        </a>
+      </nav>
+      <button class="d-new-goxik">+ New Goxik</button>
+      <div class="d-premium">
+        <div class="title">✦ Goxik Premium</div>
+        More freedom.<br>More expression.
+        <a href="#">Upgrade Now →</a>
+      </div>
+      <div class="d-footer">© 2024 Goxik.<br>All rights reserved.</div>
+    </aside>
+
+    <!-- Main feed -->
+    <main class="d-main">
+      <div class="d-composer">What's on your mind?</div>
+
+      <div class="d-feed" id="dFeed"></div>
+    </main>
+
+    <!-- Right sidebar -->
+    <aside class="d-side">
+      <div class="side-card">
+        <div class="side-card-head">
+          <div class="h"><svg class="flame-icon" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 3-2 4-2 7a3 3 0 0 0 6 0c1 1.5 1.5 3 1.5 4.5A5.5 5.5 0 0 1 12 19a5.5 5.5 0 0 1-5.5-5.5C6.5 9 8 6 12 2Z"/></svg> Trending Goxiks</div>
+          <div class="view-all">View all</div>
+        </div>
+        <div class="trend-row"><span class="num">1</span><span class="tag">#Silence</span><span class="count">2.8K Goxiks</span></div>
+        <div class="trend-row"><span class="num">2</span><span class="tag">#Overthinking</span><span class="count">1.9K Goxiks</span></div>
+        <div class="trend-row"><span class="num">3</span><span class="tag">#LateNightThoughts</span><span class="count">1.5K Goxiks</span></div>
+        <div class="trend-row"><span class="num">4</span><span class="tag">#Unspoken</span><span class="count">1.2K Goxiks</span></div>
+        <div class="trend-row"><span class="num">5</span><span class="tag">#WhatIf</span><span class="count">987 Goxiks</span></div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-card-head">
+          <div class="h">Who to Connect</div>
+          <div class="view-all">View all</div>
+        </div>
+        <div class="connect-row">
+          <div class="avatar"><svg viewBox="0 0 40 40"><use href="#avatarArt"/></svg></div>
+          <div class="info"><div class="n">Nova</div><div class="h">@nova_soul</div></div>
+          <button class="follow-btn">Follow</button>
+        </div>
+        <div class="connect-row">
+          <div class="avatar"><svg viewBox="0 0 40 40"><use href="#avatarArt"/></svg></div>
+          <div class="info"><div class="n">Elio</div><div class="h">@elio_thoughts</div></div>
+          <button class="follow-btn">Follow</button>
+        </div>
+        <div class="connect-row">
+          <div class="avatar"><svg viewBox="0 0 40 40"><use href="#avatarArt"/></svg></div>
+          <div class="info"><div class="n">Zara</div><div class="h">@zara_verse</div></div>
+          <button class="follow-btn">Follow</button>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-card-head">
+          <div class="h">💬 Daily Prompt</div>
+          <div class="view-all">↻</div>
+        </div>
+        <div class="daily-prompt-q">If your thoughts could build a world, what would it look like?</div>
+        <button class="goxik-now-btn">Goxik Now</button>
+      </div>
+
+      <div>
+        <div class="d-links">
+          <a>About</a><a>Help</a><a>Terms</a><a>Privacy</a>
+        </div>
+        <div class="d-copyright">© 2024 Goxik. All rights reserved.</div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ===================== HIDDEN GALLERY INPUT ===================== -->
+<input type="file" id="reelFileInput" accept="video/*" multiple style="display:none">
+
+<!-- ===================== UPLOAD SHEET ===================== -->
+<div class="upload-overlay" id="uploadOverlay">
+  <div class="upload-sheet">
+    <div class="upload-sheet-head">
+      <div class="upload-sheet-title">New Reel</div>
+      <button type="button" class="upload-sheet-close" id="uploadCloseBtn">&times;</button>
+    </div>
+    <div class="upload-preview-row" id="uploadPreviewRow"></div>
+    <div class="upload-sound-banner" id="uploadSoundBanner" style="display:none;">
+      🎵 <span id="uploadSoundBannerText"></span>
+      <button type="button" id="uploadSoundBannerClear">&times;</button>
+    </div>
+    <div class="upload-field">
+      <label>Title</label>
+      <input type="text" id="uploadTitle" placeholder="Enter title">
+    </div>
+    <div class="upload-field">
+      <label>Description</label>
+      <textarea id="uploadDesc" placeholder="Enter description"></textarea>
+    </div>
+    <div class="upload-field">
+      <label>Tags</label>
+      <input type="text" id="uploadTags" placeholder="e.g. funny, dance, vlog">
+    </div>
+    <div class="upload-field">
+      <label>Visibility</label>
+      <select id="uploadVisibility">
+        <option value="public">Public</option>
+        <option value="private">Private</option>
+      </select>
+    </div>
+    <button type="button" class="upload-publish-btn" id="uploadPublishBtn" disabled>Publish</button>
+  </div>
+</div>
+
+<!-- ===================== REELS VIEW ===================== -->
+<div class="reels-view" id="reelsView">
+  <div class="reels-topbar">
+    <button type="button" class="reels-icon-btn" id="reelsBackBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <div class="reels-heading">Reels</div>
+    <div style="width:38px;"></div>
+  </div>
+  <div class="reels-scroll" id="reelsScroll"></div>
+</div>
+
+<!-- ===================== REEL COMMENT SHEET ===================== -->
+<div class="reel-comment-sheet" id="reelCommentSheet">
+  <div class="rcs-backdrop" id="reelCommentBackdrop"></div>
+  <div class="rcs-panel">
+    <div class="rcs-handle"></div>
+    <div class="rcs-title">Comments</div>
+    <div class="comment-list" id="reelCommentList"></div>
+    <form class="comment-form" id="reelCommentForm">
+      <input type="text" class="comment-input" id="reelCommentInput" placeholder="Add a comment..." autocomplete="off">
+      <button type="submit" class="comment-send">Post</button>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== PROFILE VIEW ===================== -->
+<div class="profile-view" id="profileView">
+  <div class="profile-view-top">
+    <button type="button" class="pv-back" id="profileBackBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <div class="pv-title">Profile</div>
+  </div>
+  <div class="pv-body">
+
+    <!-- shown only until the user completes their profile -->
+    <div id="pvSetup" style="display:none;">
+      <div class="pv-avatar"><svg viewBox="0 0 40 40"><use href="#avatarArt"/></svg></div>
+      <div class="pv-setup-note">রিলস আপলোড করার আগে আপনার প্রোফাইল সম্পূর্ণ করুন।</div>
+      <div class="upload-field">
+        <label>আপনার নাম</label>
+        <input type="text" id="pvSetupName" placeholder="নাম লিখুন">
+      </div>
+      <button type="button" class="upload-publish-btn" id="pvSetupSaveBtn">প্রোফাইল সেভ করুন</button>
+    </div>
+
+    <!-- shown once the profile is complete -->
+    <div id="pvMain" style="display:none;">
+      <div class="pv-avatar"><svg viewBox="0 0 40 40"><use href="#avatarArt"/></svg></div>
+      <div class="pv-name" id="pvName">Arin</div>
+      <div class="pv-handle" id="pvHandle">@arin_writer</div>
+      <div class="pv-stats">
+        <div class="s"><div class="n" id="pvReelsCount">0</div><div class="l">Reels</div></div>
+        <div class="s"><div class="n">1.2K</div><div class="l">Followers</div></div>
+        <div class="s"><div class="n">312</div><div class="l">Following</div></div>
+      </div>
+      <div class="pv-section-title">My Reels</div>
+      <div class="pv-grid" id="pvReelsGrid"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================== SOUND VIEW ===================== -->
+<div class="sound-view" id="soundView">
+  <div class="sv-top">
+    <button type="button" class="sv-back" id="soundBackBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <div class="sv-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="svSearchInput" placeholder="Find related content">
+    </div>
+    <button type="button" class="sv-share" id="svShareBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+    </button>
+  </div>
+  <div class="sv-body">
+    <div class="sv-avatar-wrap">
+      <div class="sv-avatar">
+        <div class="inner" id="svAvatarInner"><svg viewBox="0 0 40 40"><use href="#avatarArt"/></svg></div>
+        <button type="button" class="sv-play" id="svPlayBtn">
+          <svg id="svPlayIcon" viewBox="0 0 24 24" fill="#111"><path d="M8 5v14l11-7z"></path></svg>
+        </button>
+      </div>
+    </div>
+    <div class="sv-title" id="svTitle">Original Sound</div>
+    <div class="sv-owner" id="svOwner">Arin</div>
+    <div class="sv-count" id="svCount">0 posts</div>
+    <button type="button" class="sv-save-btn" id="svSaveBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      <span id="svSaveLabel">Save</span>
+    </button>
+    <div class="sv-grid" id="svGrid"></div>
+  </div>
+  <div class="sv-bottom-bar">
+    <button type="button" class="sv-addstory-btn" id="svAddStoryBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Add to Story
+    </button>
+    <button type="button" class="sv-usesound-btn" id="svUseSoundBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      Use sound
+    </button>
+  </div>
+</div>
+<audio id="svAudioPreview" style="display:none"></audio>
+
+<!-- Decentralized sync: Gun.js (metadata/text sync over public relay peers)
+     and WebTorrent (direct browser-to-browser video/audio file transfer). -->
+<script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/webtorrent@latest/webtorrent.min.js"></script>
+
+<script>
+const posts = [
+  {
+    name:"Arin", handle:"@arin_writer", time:"2m", verified:true,
+    seed:"arin",
+    text:"Sometimes, the quietest mind has the loudest thoughts.",
+    tags:["mind","thoughts","life"],
+    views:"1.2K", likes:"256", comments:"68"
+  },
+  {
+    name:"Mei", handle:"@mei_verse", time:"15m", verified:false,
+    seed:"mei",
+    text:"We don't meet people by accident. They are meant to cross our path for a reason.",
+    tags:["people","destiny","connection"],
+    views:"892", likes:"218", comments:"64"
+  },
+  {
+    name:"Rayhan", handle:"@rayhan_ink", time:"32m", verified:false,
+    seed:"rayhan",
+    text:"Writing is my way of turning emotions into something the world can feel.",
+    tags:["writing","emotion","ink"],
+    hideTagsOnMobile:true,
+    views:"1.6K", likes:"329", comments:"91"
+  }
+];
+
+function verifiedBadge(){
+  return `<svg class="verified" viewBox="0 0 24 24" fill="#6c47ff"><path d="M12 2l2.4 1.9 3-.6 1 2.9 2.9 1-.6 3L22 12l-1.9 2.4.6 3-2.9 1-1 2.9-3-.6L12 22l-2.4-1.9-3 .6-1-2.9-2.9-1 .6-3L2 12l1.9-2.4-.6-3 2.9-1 1-2.9 3 .6L12 2z"/><path d="M9 12.5l1.8 1.8L15.5 9.5" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+function postCardHTML(p, isMobile, idx){
+  return `
+  <div class="post-card" data-index="${idx}">
+    <div class="post-head">
+      <div class="avatar"><svg viewBox="0 0 40 40"><use href="#avatarArt"/></svg></div>
+      <div class="post-user">
+        <div class="name-row">${p.name} ${p.verified ? verifiedBadge() : ""}</div>
+        <div class="handle-row">${p.handle} · ${p.time}</div>
+      </div>
+      <div class="post-menu">⋯</div>
+    </div>
+    <div class="post-text no-tags">${p.text}</div>
+    <div class="post-stats">
+      <button class="stat" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="6"/></svg>${p.views}</button>
+      <button class="stat like-btn" type="button" data-index="${idx}" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg><span class="like-count" data-index="${idx}">${p.likes}</span></button>
+      <button class="stat comment-btn" type="button" data-index="${idx}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="comment-count" data-index="${idx}">${p.comments}</span></button>
+      <span class="spacer"></span>
+      <button class="stat bookmark-btn" type="button" data-index="${idx}" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21 12 16l-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button>
+    </div>
+    <div class="comment-box" data-index="${idx}">
+      <div class="comment-list" data-index="${idx}"></div>
+      <form class="comment-form" data-index="${idx}">
+        <input type="text" class="comment-input" placeholder="Write a comment..." maxlength="240">
+        <button type="submit" class="comment-send">Post</button>
+      </form>
+    </div>
+  </div>`;
+}
+
+const postState = posts.map(p => ({
+  liked:false,
+  likeCount:parseInt(p.likes,10),
+  bookmarked:false,
+  commentCount:parseInt(p.comments,10),
+  comments:[]
+}));
+
+function renderFeedPosts(){
+  document.getElementById("mFeed").innerHTML = posts.map((p,i)=>postCardHTML(p, true, i)).join("");
+  document.getElementById("dFeed").innerHTML = posts.map((p,i)=>postCardHTML(p, false, i)).join("");
+  attachFeedPostHandlers();
+}
+
+function refreshPostUI(i){
+  const s = postState[i];
+  document.querySelectorAll(`.like-btn[data-index="${i}"]`).forEach(b=>{
+    b.classList.toggle("liked", s.liked);
+    b.setAttribute("aria-pressed", s.liked ? "true" : "false");
+  });
+  document.querySelectorAll(`.like-count[data-index="${i}"]`).forEach(el=>{
+    el.textContent = s.likeCount;
+  });
+  document.querySelectorAll(`.bookmark-btn[data-index="${i}"]`).forEach(b=>{
+    b.classList.toggle("bookmarked", s.bookmarked);
+    b.setAttribute("aria-pressed", s.bookmarked ? "true" : "false");
+  });
+  document.querySelectorAll(`.comment-count[data-index="${i}"]`).forEach(el=>{
+    el.textContent = s.commentCount;
+  });
+  document.querySelectorAll(`.comment-list[data-index="${i}"]`).forEach(list=>{
+    list.innerHTML = s.comments.map(c => `<div class="comment-item"><span class="comment-item-author">You</span> ${c}</div>`).join("");
+  });
+}
+
+function attachFeedPostHandlers(){
+  document.querySelectorAll(".like-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const i = btn.dataset.index;
+      const s = postState[i];
+      s.liked = !s.liked;
+      s.likeCount += s.liked ? 1 : -1;
+      refreshPostUI(i);
+    });
+  });
+
+  document.querySelectorAll(".bookmark-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const i = btn.dataset.index;
+      postState[i].bookmarked = !postState[i].bookmarked;
+      refreshPostUI(i);
+    });
+  });
+
+  document.querySelectorAll(".comment-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const i = btn.dataset.index;
+      document.querySelectorAll(`.comment-box[data-index="${i}"]`).forEach(box=>{
+        box.classList.toggle("open");
+        if(box.classList.contains("open")){
+          const input = box.querySelector(".comment-input");
+          if(input) setTimeout(()=>input.focus(), 50);
+        }
+      });
+    });
+  });
+
+  document.querySelectorAll(".comment-form").forEach(form=>{
+    form.addEventListener("submit", (e)=>{
+      e.preventDefault();
+      const i = form.dataset.index;
+      const input = form.querySelector(".comment-input");
+      const text = input.value.trim();
+      if(!text) return;
+      postState[i].comments.push(text);
+      postState[i].commentCount += 1;
+      input.value = "";
+      refreshPostUI(i);
+    });
+  });
+}
+
+renderFeedPosts();
+
+/* ===== Compose & publish a text post globally (Gun.js — no central server) ===== */
+function composeAndPublishText(){
+  if(!isProfileComplete()){
+    alert("Please complete your profile before posting.");
+    openProfileView();
+    return;
+  }
+  const text = prompt("What's on your mind?");
+  if(!text || !text.trim()) return;
+  const profile = getSavedProfile();
+  const id = "t_" + Date.now() + "_" + Math.random().toString(36).slice(2,8);
+  const postData = {
+    id,
+    name: profile.name,
+    handle: "@" + profile.name.toLowerCase().replace(/\s+/g, "_"),
+    seed: profile.name,
+    text: text.trim(),
+    tags: [],
+    createdAt: Date.now()
+  };
+  posts.unshift({
+    id, name: postData.name, handle: postData.handle, time:"now", verified:false,
+    seed: postData.seed, text: postData.text, tags: [], views:"0", likes:"0", comments:"0"
+  });
+  postState.unshift({ liked:false, likeCount:0, bookmarked:false, commentCount:0, comments:[] });
+  seenGlobalTextIds.add(id);
+  renderFeedPosts();
+  publishTextGlobally(postData);
+}
+document.querySelectorAll(".m-composer, .d-composer").forEach(el=>{
+  el.style.cursor = "pointer";
+  el.addEventListener("click", composeAndPublishText);
+});
+
+watchGlobalReels();
+watchGlobalTexts();
+
+const hamburgerBtn = document.getElementById("hamburgerBtn");
+const drawer = document.getElementById("drawer");
+const overlay = document.getElementById("overlay");
+const drawerClose = document.getElementById("drawerClose");
+
+function openDrawer(){ drawer.classList.add("open"); overlay.classList.add("open"); }
+function closeDrawer(){ drawer.classList.remove("open"); overlay.classList.remove("open"); }
+
+hamburgerBtn.addEventListener("click", openDrawer);
+drawerClose.addEventListener("click", closeDrawer);
+overlay.addEventListener("click", closeDrawer);
+
+/* ===== Tab switching (For You / New) — desktop + mobile, kept in sync ===== */
+function setActiveTab(tabName){
+  document.querySelectorAll(".gh-tab, .m-tab").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.tab === tabName);
+  });
+}
+document.querySelectorAll(".gh-tab, .m-tab").forEach(btn=>{
+  btn.addEventListener("click", ()=> setActiveTab(btn.dataset.tab));
+});
+
+/* ===== Search: filters the visible feed by name / handle / text ===== */
+function filterFeed(query){
+  const q = query.trim().toLowerCase();
+  document.querySelectorAll("#dFeed .post-card, #mFeed .post-card").forEach(card=>{
+    const idx = card.dataset.index;
+    const p = posts[idx];
+    const haystack = (p.name + " " + p.handle + " " + p.text).toLowerCase();
+    card.style.display = (!q || haystack.includes(q)) ? "" : "none";
+  });
+}
+const ghSearchInput = document.getElementById("ghSearchInput");
+if(ghSearchInput){
+  ghSearchInput.addEventListener("input", (e)=> filterFeed(e.target.value));
+}
+
+/* ===== Right-side icon buttons: give clear, smooth feedback on click ===== */
+const ghBellBtn = document.getElementById("ghBellBtn");
+if(ghBellBtn){
+  ghBellBtn.addEventListener("click", ()=>{
+    ghBellBtn.classList.toggle("gh-active");
+  });
+}
+const ghProfileBtn = document.getElementById("ghProfileBtn");
+if(ghProfileBtn){
+  ghProfileBtn.addEventListener("click", ()=>{
+    ghProfileBtn.classList.toggle("gh-active");
+    openProfileView();
+  });
+}
+
+/* ===================== LOCAL VIDEO DB (IndexedDB) ===================== */
+const REEL_DB_NAME = "goxikReelsDB";
+const REEL_STORE = "reels";
+let reelDBPromise = null;
+
+function openReelDB(){
+  if(reelDBPromise) return reelDBPromise;
+  reelDBPromise = new Promise((resolve, reject)=>{
+    const req = indexedDB.open(REEL_DB_NAME, 1);
+    req.onupgradeneeded = ()=>{
+      const db = req.result;
+      if(!db.objectStoreNames.contains(REEL_STORE)){
+        const store = db.createObjectStore(REEL_STORE, { keyPath:"id" });
+        store.createIndex("createdAt", "createdAt");
+      }
+    };
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+  return reelDBPromise;
+}
+
+function addReel(reel){
+  return openReelDB().then(db => new Promise((resolve, reject)=>{
+    const tx = db.transaction(REEL_STORE, "readwrite");
+    tx.objectStore(REEL_STORE).add(reel);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  }));
+}
+
+function updateReel(reel){
+  return openReelDB().then(db => new Promise((resolve, reject)=>{
+    const tx = db.transaction(REEL_STORE, "readwrite");
+    tx.objectStore(REEL_STORE).put(reel);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  }));
+}
+
+function getAllReels(){
+  return openReelDB().then(db => new Promise((resolve, reject)=>{
+    const tx = db.transaction(REEL_STORE, "readonly");
+    const req = tx.objectStore(REEL_STORE).getAll();
+    req.onsuccess = ()=> resolve((req.result||[]).sort((a,b)=> b.createdAt - a.createdAt));
+    req.onerror = ()=> reject(req.error);
+  }));
+}
+
+/* ===================== GLOBAL DECENTRALIZED SYNC (no central server) =====================
+   Metadata (title/desc/tags/text posts) replicates peer-to-peer through Gun.js, which
+   uses public relay peers only to pass messages along — every browser keeps its own full
+   copy locally, nobody's data lives "on" the relay. Actual video/audio bytes never touch
+   the relay at all: they transfer directly browser-to-browser over WebTorrent/WebRTC.
+   NOTE (please read): a piece of content is only fetchable while at least one browser
+   that has it is online and has this page open (the publisher, or anyone who already
+   watched it and is still seeding). That is an unavoidable property of "no central
+   server, no company storage" — the tradeoff for total independence is that reach and
+   availability depend on how many people are online at once, same as any P2P network. */
+let gunDB = null, wtClient = null;
+function getGun(){
+  if(gunDB) return gunDB;
+  if(typeof Gun === "undefined") return null;
+  gunDB = Gun({
+    peers: [
+      "https://gun-manhattan.herokuapp.com/gun",
+      "https://gunjs.herokuapp.com/gun",
+      "https://peer.wallie.io/gun"
+    ]
+  });
+  return gunDB;
+}
+function getWT(){
+  if(wtClient) return wtClient;
+  if(typeof WebTorrent === "undefined" || !WebTorrent.WEBRTC_SUPPORT) return null;
+  wtClient = new WebTorrent();
+  return wtClient;
+}
+const WT_TRACKERS = [
+  "wss://tracker.openwebtorrent.com",
+  "wss://tracker.btorrent.xyz",
+  "wss://tracker.fastcast.nu"
+];
+
+function globalReelsNode(){ const g = getGun(); return g ? g.get("goxik_global_reels_v1") : null; }
+function globalTextsNode(){ const g = getGun(); return g ? g.get("goxik_global_texts_v1") : null; }
+
+/* Seed a just-published (public) reel onto the swarm and announce its metadata globally. */
+function publishReelGlobally(reel){
+  const node = globalReelsNode();
+  const client = getWT();
+  if(!node || !client){ console.warn("Global P2P sync unavailable in this browser/network."); return; }
+  try{
+    const file = new File([reel.blob], reel.id + (reel.mime && reel.mime.includes("webm") ? ".webm" : ".mp4"), { type: reel.mime || "video/mp4" });
+    client.seed(file, { announce: WT_TRACKERS }, torrent => {
+      node.get(reel.id).put({
+        id: reel.id,
+        title: reel.title || "",
+        desc: reel.desc || "",
+        tags: reel.tags || "",
+        mime: reel.mime || "video/mp4",
+        magnetURI: torrent.magnetURI,
+        author: (getSavedProfile() && getSavedProfile().name) || "Anonymous",
+        createdAt: reel.createdAt || Date.now()
+      });
+    });
+  }catch(err){ console.error("publishReelGlobally failed", err); }
+}
+
+/* Publish a text post globally the same way (small enough to go straight through Gun). */
+function publishTextGlobally(postData){
+  const node = globalTextsNode();
+  if(!node) return;
+  node.get(postData.id).put(postData);
+}
+
+const seenGlobalReelIds = new Set();
+function watchGlobalReels(){
+  const node = globalReelsNode();
+  if(!node) return;
+  node.map().on(async (data, id)=>{
+    if(!data || !data.magnetURI || seenGlobalReelIds.has(id)) return;
+    seenGlobalReelIds.add(id);
+    try{
+      const existing = await getAllReels();
+      if(existing.some(r => r.id === id)) return;
+    }catch(e){}
+    const client = getWT();
+    if(!client) return;
+    client.add(data.magnetURI, { announce: WT_TRACKERS }, torrent => {
+      const file = torrent.files.find(f => /\.(mp4|webm|mov|m4a|mp3)$/i.test(f.name)) || torrent.files[0];
+      if(!file) return;
+      file.getBlob(async (err, blob)=>{
+        if(err || !blob) return;
+        const reel = {
+          id, title: data.title || "Untitled", desc: data.desc || "",
+          tags: data.tags || "", blob, mime: data.mime || blob.type,
+          createdAt: data.createdAt || Date.now(),
+          likes: 0, commentList: [], shares: 0, saves: 0,
+          soundId: id, soundOwnerName: data.author || "Unknown",
+          visibility: "public", remote: true
+        };
+        try{
+          await addReel(reel);
+          if(typeof reelsView !== "undefined" && reelsView.classList.contains("open")) openReelsView();
+          if(typeof refreshMyReelsGrid === "function") refreshMyReelsGrid().catch(()=>{});
+        }catch(e){ /* likely already stored */ }
+      });
+    });
+  });
+}
+
+const seenGlobalTextIds = new Set();
+function watchGlobalTexts(){
+  const node = globalTextsNode();
+  if(!node) return;
+  node.map().on((data, id)=>{
+    if(!data || !data.text || seenGlobalTextIds.has(id)) return;
+    seenGlobalTextIds.add(id);
+    if(posts.some(p => p.id === id)) return;
+    posts.unshift({
+      id, name: data.name || "Anonymous", handle: data.handle || "@anonymous",
+      time: "now", verified: false, seed: data.seed || data.name || "anon",
+      text: data.text, tags: data.tags || [],
+      views: "0", likes: "0", comments: "0"
+    });
+    postState.unshift({ liked:false, likeCount:0, bookmarked:false, commentCount:0, comments:[] });
+    if(typeof renderFeedPosts === "function") renderFeedPosts();
+  });
+}
+
+/* ===================== PROFILE GATE ===================== */
+const GOXIK_PROFILE_KEY = "goxikProfile";
+function getSavedProfile(){
+  try{ return JSON.parse(localStorage.getItem(GOXIK_PROFILE_KEY) || "null"); }
+  catch(e){ return null; }
+}
+function isProfileComplete(){
+  const p = getSavedProfile();
+  return !!(p && p.name && p.name.trim());
+}
+
+function getEffectiveSound(reel){
+  return {
+    soundId: reel.soundId || reel.id,
+    ownerName: reel.soundOwnerName || (getSavedProfile() && getSavedProfile().name) || "Arin"
+  };
+}
+
+/* ===================== UPLOAD FLOW ===================== */
+const reelFileInput = document.getElementById("reelFileInput");
+const uploadOverlay = document.getElementById("uploadOverlay");
+const uploadPreviewRow = document.getElementById("uploadPreviewRow");
+const uploadTitle = document.getElementById("uploadTitle");
+const uploadDesc = document.getElementById("uploadDesc");
+const uploadTags = document.getElementById("uploadTags");
+const uploadVisibility = document.getElementById("uploadVisibility");
+const uploadPublishBtn = document.getElementById("uploadPublishBtn");
+const uploadCloseBtn = document.getElementById("uploadCloseBtn");
+
+let pendingFiles = [];
+let pendingSoundContext = null;
+
+function openGalleryPicker(){
+  if(!isProfileComplete()){
+    alert("রিলস আপলোড করার আগে অবশ্যই প্রোফাইল সম্পূর্ণ করতে হবে।");
+    openProfileView();
+    return;
+  }
+  reelFileInput.value = "";
+  reelFileInput.click();
+}
+const mUploadBtn = document.getElementById("mUploadBtn");
+const dUploadBtn = document.getElementById("dUploadBtn");
+if(mUploadBtn) mUploadBtn.addEventListener("click", ()=>{ pendingSoundContext = null; openGalleryPicker(); });
+if(dUploadBtn) dUploadBtn.addEventListener("click", ()=>{ pendingSoundContext = null; openGalleryPicker(); });
+
+const uploadSoundBanner = document.getElementById("uploadSoundBanner");
+const uploadSoundBannerText = document.getElementById("uploadSoundBannerText");
+const uploadSoundBannerClear = document.getElementById("uploadSoundBannerClear");
+uploadSoundBannerClear.addEventListener("click", ()=>{
+  pendingSoundContext = null;
+  uploadSoundBanner.style.display = "none";
+});
+
+reelFileInput.addEventListener("change", (e)=>{
+  const files = Array.from(e.target.files || []).filter(f => f.type.startsWith("video/"));
+  if(!files.length) return;
+  pendingFiles = files;
+  renderUploadPreviews();
+  uploadTitle.value = "";
+  uploadDesc.value = "";
+  uploadTags.value = "";
+  uploadVisibility.value = "public";
+  uploadPublishBtn.disabled = false;
+  if(pendingSoundContext){
+    uploadSoundBanner.style.display = "flex";
+    uploadSoundBannerText.textContent = "Original Sound - " + pendingSoundContext.ownerName;
+  } else {
+    uploadSoundBanner.style.display = "none";
+  }
+  uploadOverlay.classList.add("open");
+});
+
+function renderUploadPreviews(){
+  uploadPreviewRow.innerHTML = "";
+  pendingFiles.forEach((file, i)=>{
+    const url = URL.createObjectURL(file);
+    const thumb = document.createElement("div");
+    thumb.className = "upload-preview-thumb";
+    thumb.innerHTML = `<video src="${url}" muted playsinline></video><button type="button" class="rm" data-i="${i}">&times;</button>`;
+    uploadPreviewRow.appendChild(thumb);
+  });
+}
+
+uploadPreviewRow.addEventListener("click", (e)=>{
+  const btn = e.target.closest(".rm");
+  if(!btn) return;
+  const i = parseInt(btn.dataset.i, 10);
+  pendingFiles.splice(i, 1);
+  renderUploadPreviews();
+  uploadPublishBtn.disabled = pendingFiles.length === 0;
+  if(pendingFiles.length === 0) closeUploadSheet();
+});
+
+function closeUploadSheet(){
+  uploadOverlay.classList.remove("open");
+  pendingFiles = [];
+  pendingSoundContext = null;
+  uploadSoundBanner.style.display = "none";
+}
+uploadCloseBtn.addEventListener("click", closeUploadSheet);
+uploadOverlay.addEventListener("click", (e)=>{ if(e.target === uploadOverlay) closeUploadSheet(); });
+
+/* ---- real client-side remux: new video's picture + original sound's audio ---- */
+async function buildReelBlobWithSound(videoFile, soundBlob){
+  const videoURL = URL.createObjectURL(videoFile);
+  const soundURL = URL.createObjectURL(soundBlob);
+  try{
+    const visualVideo = document.createElement("video");
+    visualVideo.src = videoURL; visualVideo.muted = true; visualVideo.playsInline = true;
+    await new Promise((res, rej)=>{ visualVideo.onloadedmetadata = res; visualVideo.onerror = rej; });
+
+    const soundSource = document.createElement("video");
+    soundSource.src = soundURL; soundSource.muted = false; soundSource.playsInline = true;
+    await new Promise((res, rej)=>{ soundSource.onloadedmetadata = res; soundSource.onerror = rej; });
+
+    const width = visualVideo.videoWidth || 720;
+    const height = visualVideo.videoHeight || 1280;
+    const canvas = document.createElement("canvas");
+    canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    const canvasStream = canvas.captureStream(30);
+
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioCtx();
+    if(audioCtx.state === "suspended") await audioCtx.resume();
+    const sourceNode = audioCtx.createMediaElementSource(soundSource);
+    const destNode = audioCtx.createMediaStreamDestination();
+    sourceNode.connect(destNode);
+
+    const combinedStream = new MediaStream([
+      ...canvasStream.getVideoTracks(),
+      ...destNode.stream.getAudioTracks()
+    ]);
+
+    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
+      ? "video/webm;codecs=vp9,opus"
+      : (MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus") ? "video/webm;codecs=vp8,opus" : "video/webm");
+    const recorder = new MediaRecorder(combinedStream, { mimeType });
+    const chunks = [];
+    recorder.ondataavailable = (e)=>{ if(e.data && e.data.size) chunks.push(e.data); };
+    const stopped = new Promise(resolve=>{ recorder.onstop = ()=> resolve(new Blob(chunks, { type:"video/webm" })); });
+
+    const durationSec = (visualVideo.duration && isFinite(visualVideo.duration)) ? visualVideo.duration : 10;
+    soundSource.loop = true;
+    visualVideo.currentTime = 0;
+    soundSource.currentTime = 0;
+
+    let drawing = true;
+    function drawFrame(){
+      if(!drawing) return;
+      ctx.drawImage(visualVideo, 0, 0, width, height);
+      requestAnimationFrame(drawFrame);
+    }
+
+    await Promise.all([ visualVideo.play(), soundSource.play() ]);
+    recorder.start();
+    drawFrame();
+
+    await new Promise(resolve => setTimeout(resolve, Math.round(durationSec * 1000) + 200));
+
+    drawing = false;
+    visualVideo.pause();
+    soundSource.pause();
+    recorder.stop();
+
+    const outBlob = await stopped;
+    audioCtx.close();
+    return outBlob;
+  } finally {
+    URL.revokeObjectURL(videoURL);
+    URL.revokeObjectURL(soundURL);
+  }
+}
+
+uploadPublishBtn.addEventListener("click", async ()=>{
+  if(!pendingFiles.length) return;
+  uploadPublishBtn.disabled = true;
+  uploadPublishBtn.textContent = "Publishing...";
+  const title = uploadTitle.value.trim() || "Untitled";
+  const desc = uploadDesc.value.trim();
+  const tags = uploadTags.value.trim();
+  const visibility = uploadVisibility.value;
+  const soundCtx = pendingSoundContext;
+  const myName = (getSavedProfile() && getSavedProfile().name) || "Arin";
+  try{
+    for(const file of pendingFiles){
+      const reelId = "r_" + Date.now() + "_" + Math.random().toString(36).slice(2,8);
+      let blob = file;
+      let mime = file.type;
+      if(soundCtx && soundCtx.sourceBlob){
+        try{
+          uploadPublishBtn.textContent = "Adding sound...";
+          blob = await buildReelBlobWithSound(file, soundCtx.sourceBlob);
+          mime = blob.type || "video/webm";
+        }catch(mixErr){
+          console.error("Sound mux failed, keeping original clip audio instead", mixErr);
+          blob = file;
+          mime = file.type;
+        }
+        uploadPublishBtn.textContent = "Publishing...";
+      }
+      const reel = {
+        id: reelId,
+        title, desc, tags, visibility,
+        blob, mime,
+        createdAt: Date.now(),
+        likes: 0,
+        commentList: [],
+        shares: 0,
+        saves: 0,
+        soundId: soundCtx ? soundCtx.soundId : reelId,
+        soundOwnerName: soundCtx ? soundCtx.ownerName : myName
+      };
+      await addReel(reel);
+      if(visibility === "public") publishReelGlobally(reel);
+    }
+  }catch(err){
+    console.error("Reel save failed", err);
+    alert("রিলস সেভ করতে সমস্যা হয়েছে।");
+  }
+  uploadPublishBtn.textContent = "Publish";
+  closeUploadSheet();
+});
+
+/* ===================== REELS VIEW ===================== */
+const reelsView = document.getElementById("reelsView");
+const reelsScroll = document.getElementById("reelsScroll");
+let reelsTrack = null;
+const reelsBackBtn = document.getElementById("reelsBackBtn");
+const mReelsNav = document.getElementById("mReelsNav");
+const dReelsNavs = document.querySelectorAll(".d-reels-nav");
+
+let reelObjectUrls = [];
+
+/* ---- Facebook/Instagram-style reel paging: follows the finger while dragging,
+   snaps exactly one item per gesture, and guarantees only ONE video ever plays ---- */
+let reelIndex = 0;
+let reelItemHeight = 0;
+
+function reelItems(){
+  return reelsTrack ? Array.from(reelsTrack.children) : [];
+}
+
+function truncateDisplayName(name, max = 15){
+  name = String(name || "");
+  return name.length > max ? name.slice(0, max) + "..." : name;
+}
+
+function measureReelHeight(){
+  reelItemHeight = reelsScroll.clientHeight || window.innerHeight;
+}
+
+function setTrackTransform(px, animate){
+  reelsTrack.style.transition = animate ? "transform .32s cubic-bezier(.22,.61,.36,1)" : "none";
+  reelsTrack.style.transform = `translate3d(0, ${px}px, 0)`;
+}
+
+/* single source of truth for playback: pauses every reel video except the active one,
+   so scrolling can never leave two videos (or their audio) running at once.
+   Calling pause() on a video whose play() promise hasn't settled yet is what caused
+   the overlapping audio — some browsers ignore that pause and let playback start
+   anyway once buffering finishes. We work around it by (a) silencing the outgoing
+   video immediately as a safety net, and (b) only calling pause() once its play()
+   promise has actually settled. */
+const reelPlayPromises = new WeakMap();
+let activeReelVideoEl = null;
+
+function activateReel(index){
+  const items = reelItems();
+  items.forEach((el, i)=>{
+    const v = el.querySelector("video");
+    if(!v) return;
+    if(i === index){
+      activeReelVideoEl = v;
+      v.muted = v.dataset.userMuted === "true";
+      const playPromise = v.play();
+      reelPlayPromises.set(v, playPromise);
+      if(playPromise && playPromise.catch){
+        playPromise.catch(()=>{
+          v.muted = true;
+          v.dataset.userMuted = "true";
+          const btn = el.querySelector(".reel-mute-btn");
+          if(btn){
+            btn.querySelector(".icon-vol-on").style.display = "none";
+            btn.querySelector(".icon-vol-off").style.display = "block";
+          }
+          const retryPromise = v.play();
+          reelPlayPromises.set(v, retryPromise);
+          if(retryPromise && retryPromise.catch) retryPromise.catch(()=>{});
+        });
+      }
+    } else {
+      v.muted = true;
+      const pending = reelPlayPromises.get(v);
+      if(pending && pending.then){
+        // Only pause once the promise settles, and only if this video hasn't
+        // since been reactivated (the user could have swiped back already) —
+        // otherwise a late pause here would cancel out the fresh play() below.
+        pending.then(()=>{ if(v !== activeReelVideoEl) v.pause(); }).catch(()=>{});
+      } else if(!v.paused){
+        v.pause();
+      }
+    }
+  });
+}
+
+function goToReel(targetIndex){
+  const items = reelItems();
+  if(!items.length) return;
+  targetIndex = Math.max(0, Math.min(items.length - 1, targetIndex));
+  reelIndex = targetIndex;
+  measureReelHeight();
+  setTrackTransform(-reelIndex * reelItemHeight, true);
+  activateReel(reelIndex);
+}
+
+let reelLastWheelAt = 0;
+reelsScroll.addEventListener("wheel", (e)=>{
+  e.preventDefault();
+  if(reelDragging) return;
+  const now = Date.now();
+  if(now - reelLastWheelAt < 500) return;
+  reelLastWheelAt = now;
+  goToReel(reelIndex + (e.deltaY > 0 ? 1 : -1));
+}, { passive:false });
+
+const REEL_TAP_MOVE_TOLERANCE = 6;
+
+let reelDragStartY = 0;
+let reelDragStartTime = 0;
+let reelDragDeltaY = 0;
+let reelDragging = false;
+
+reelsScroll.addEventListener("touchstart", (e)=>{
+  if(!reelItems().length) return;
+  reelDragging = true;
+  reelDragDeltaY = 0;
+  reelDragStartY = e.touches[0].clientY;
+  reelDragStartTime = Date.now();
+  measureReelHeight();
+  setTrackTransform(-reelIndex * reelItemHeight, false);
+}, { passive:true });
+
+let reelMoveRAF = null;
+reelsScroll.addEventListener("touchmove", (e)=>{
+  if(!reelDragging) return;
+  e.preventDefault();
+  reelDragDeltaY = e.touches[0].clientY - reelDragStartY;
+  if(reelMoveRAF) return;
+  reelMoveRAF = requestAnimationFrame(()=>{
+    reelMoveRAF = null;
+    if(!reelDragging) return;
+    const atTop = reelIndex === 0 && reelDragDeltaY > 0;
+    const atBottom = reelIndex === reelItems().length - 1 && reelDragDeltaY < 0;
+    const resisted = (atTop || atBottom) ? reelDragDeltaY * 0.35 : reelDragDeltaY;
+    setTrackTransform(-reelIndex * reelItemHeight + resisted, false);
+  });
+}, { passive:false });
+
+function endReelDrag(){
+  if(!reelDragging) return;
+  reelDragging = false;
+  if(reelMoveRAF){ cancelAnimationFrame(reelMoveRAF); reelMoveRAF = null; }
+  if(Math.abs(reelDragDeltaY) < REEL_TAP_MOVE_TOLERANCE){
+    // This was just a tap, not a drag — leave playback alone, the video's own
+    // tap handler already toggled play/pause. Calling goToReel here would
+    // re-trigger activateReel() and force the video back to playing, undoing
+    // a pause the user just made.
+    reelDragDeltaY = 0;
+    return;
+  }
+  const elapsed = Math.max(1, Date.now() - reelDragStartTime);
+  const velocity = Math.abs(reelDragDeltaY) / elapsed; // px per ms
+  const distanceThreshold = reelItemHeight * 0.12;
+  const isQuickFlick = velocity > 0.35; // fast swipe — count it even if short
+  const crossedDistance = Math.abs(reelDragDeltaY) >= distanceThreshold;
+  if(isQuickFlick || crossedDistance){
+    if(reelDragDeltaY < 0) goToReel(reelIndex + 1);
+    else goToReel(reelIndex - 1);
+  } else {
+    goToReel(reelIndex);
+  }
+  reelDragDeltaY = 0;
+}
+reelsScroll.addEventListener("touchend", endReelDrag, { passive:true });
+reelsScroll.addEventListener("touchcancel", endReelDrag, { passive:true });
+
+window.addEventListener("resize", ()=>{
+  if(!reelsTrack || reelDragging) return;
+  measureReelHeight();
+  setTrackTransform(-reelIndex * reelItemHeight, false);
+});
+
+/* ---- reel comment sheet ---- */
+const reelCommentSheet = document.getElementById("reelCommentSheet");
+const reelCommentBackdrop = document.getElementById("reelCommentBackdrop");
+const reelCommentList = document.getElementById("reelCommentList");
+const reelCommentForm = document.getElementById("reelCommentForm");
+const reelCommentInput = document.getElementById("reelCommentInput");
+let activeCommentReel = null;
+let activeCommentItem = null;
+
+function renderReelComments(){
+  const myName = (getSavedProfile() && getSavedProfile().name) || "Arin";
+  reelCommentList.innerHTML = (activeCommentReel.commentList || []).map(c =>
+    `<div class="comment-item"><span class="comment-item-author">${myName}</span>${c}</div>`
+  ).join("");
+}
+function openReelCommentSheet(reel, item){
+  activeCommentReel = reel;
+  activeCommentItem = item;
+  if(!reel.commentList) reel.commentList = [];
+  renderReelComments();
+  reelCommentSheet.classList.add("open");
+}
+function closeReelCommentSheet(){
+  reelCommentSheet.classList.remove("open");
+  activeCommentReel = null;
+  activeCommentItem = null;
+}
+reelCommentBackdrop.addEventListener("click", closeReelCommentSheet);
+reelCommentForm.addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const text = reelCommentInput.value.trim();
+  if(!text || !activeCommentReel) return;
+  activeCommentReel.commentList.push(text);
+  reelCommentInput.value = "";
+  renderReelComments();
+  if(activeCommentItem){
+    const cntEl = activeCommentItem.querySelector(".comment-cnt");
+    if(cntEl) cntEl.textContent = activeCommentReel.commentList.length;
+  }
+  updateReel(activeCommentReel).catch(()=>{});
+});
+
+async function openReelsView(focusReelId){
+  reelsScroll.querySelectorAll("video").forEach(v => { v.muted = true; v.pause(); });
+  reelsScroll.innerHTML = "";
+  reelsTrack = document.createElement("div");
+  reelsTrack.className = "reels-track";
+  reelsScroll.appendChild(reelsTrack);
+  reelObjectUrls.forEach(u => URL.revokeObjectURL(u));
+  reelObjectUrls = [];
+
+  const reels = await getAllReels();
+  if(reels.length){
+    reels.forEach((reel, idx)=>{
+      const url = URL.createObjectURL(reel.blob);
+      reelObjectUrls.push(url);
+      const item = document.createElement("div");
+      item.className = "reel-item";
+      item.dataset.reelId = reel.id;
+      const tagsHtml = reel.tags ? `<div class="tags">${reel.tags.split(",").map(t=>"#"+t.trim()).filter(t=>t!=="#").join(" ")}</div>` : "";
+      const privHtml = reel.visibility === "private" ? `<div class="priv">🔒 Private</div>` : "";
+      item.innerHTML = `
+        <video src="${url}" playsinline loop></video>
+        <div class="vignette"></div>
+
+        <button type="button" class="reel-center-play">
+          <svg class="cp-icon" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"></path></svg>
+        </button>
+
+        <div class="reel-tap-flash left"><span>-5 seconds</span></div>
+        <div class="reel-tap-flash right"><span>+5 seconds</span></div>
+
+        <button type="button" class="reel-mute-btn">
+          <svg class="icon-vol-on" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+          <svg class="icon-vol-off" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
+        </button>
+
+        <div class="reel-side-rail">
+          <button type="button" class="reel-rail-btn like-rail-btn">
+            <span class="icon-wrap"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg></span>
+            <span class="cnt like-cnt">${reel.likes || 0}</span>
+          </button>
+          <button type="button" class="reel-rail-btn comment-rail-btn">
+            <span class="icon-wrap"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+            <span class="cnt comment-cnt">${(reel.commentList && reel.commentList.length) || 0}</span>
+          </button>
+          <button type="button" class="reel-rail-btn share-rail-btn">
+            <span class="icon-wrap"><svg viewBox="0 0 24 24" fill="currentColor" stroke-width="0"><path d="M14 3.5a1 1 0 0 1 1.7-.72l7 6.5a1 1 0 0 1 0 1.46l-7 6.5A1 1 0 0 1 14 16.5V13.9c-4.24.28-7.4 1.86-9.6 4.83a1 1 0 0 1-1.79-.68C3.06 11.02 6.9 6.06 14 5.14V3.5z"></path></svg></span>
+            <span class="cnt share-cnt">${reel.shares || 0}</span>
+          </button>
+          <button type="button" class="reel-rail-btn save-rail-btn">
+            <span class="icon-wrap"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
+            <span class="cnt save-cnt">${reel.saves || 0}</span>
+          </button>
+          <button type="button" class="reel-rail-btn sound-rail-btn">
+            <span class="icon-wrap sound-disc-wrap"><svg viewBox="0 0 40 40"><use href="#avatarArt"/></svg></span>
+          </button>
+        </div>
+
+        <div class="reel-bottom-info">
+          ${privHtml}
+          <div class="reel-user-row">
+            <div class="av"><svg viewBox="0 0 40 40"><use href="#avatarArt"/></svg></div>
+            <div class="uname">${truncateDisplayName((getSavedProfile() && getSavedProfile().name) || "Arin")}</div>
+            <button type="button" class="reel-follow-btn">Follow</button>
+          </div>
+          <div class="title">${reel.title}</div>
+          ${reel.desc ? `<div class="desc">${reel.desc}</div>` : ""}
+          ${tagsHtml}
+        </div>
+
+        <div class="reel-progress-track">
+          <div class="reel-progress-fill"></div>
+        </div>
+        <div class="reel-time-counter">0:00 / 0:00</div>
+      `;
+      const video = item.querySelector("video");
+      video.muted = false;
+      video.volume = 1;
+      video.dataset.userMuted = "false";
+
+      /* ---- center play/pause icon ---- */
+      const centerPlay = item.querySelector(".reel-center-play");
+      const cpIcon = centerPlay.querySelector(".cp-icon");
+      let hideTimer = null;
+      function showCenterIcon(){
+        centerPlay.classList.add("show");
+        if(hideTimer) clearTimeout(hideTimer);
+        hideTimer = setTimeout(()=> centerPlay.classList.remove("show"), 900);
+      }
+      function setPlayingIcon(playing){
+        cpIcon.innerHTML = playing
+          ? '<rect x="6" y="5" width="4" height="14"></rect><rect x="14" y="5" width="4" height="14"></rect>'
+          : '<path d="M8 5v14l11-7z"></path>';
+      }
+      function togglePlay(){
+        if(video.paused){
+          activeReelVideoEl = video;
+          const p = video.play();
+          if(p && p.then){
+            p.then(()=> setPlayingIcon(true)).catch(()=>{
+              video.muted = true;
+              video.dataset.userMuted = "true";
+              syncMuteIcon();
+              video.play().then(()=> setPlayingIcon(true)).catch(()=>{});
+            });
+          } else {
+            setPlayingIcon(true);
+          }
+        } else {
+          video.pause();
+          setPlayingIcon(false);
+        }
+        showCenterIcon();
+      }
+
+      /* ---- progress bar + time ---- */
+      const progressTrack = item.querySelector(".reel-progress-track");
+      const progressFill = item.querySelector(".reel-progress-fill");
+      const timeCounter = item.querySelector(".reel-time-counter");
+      function fmt(sec){
+        sec = Math.max(0, Math.round(sec || 0));
+        const m = Math.floor(sec/60), s = sec % 60;
+        return m + ":" + String(s).padStart(2,"0");
+      }
+      function renderProgress(){
+        const dur = video.duration || 0;
+        const pct = dur ? (video.currentTime / dur) * 100 : 0;
+        progressFill.style.width = pct + "%";
+        timeCounter.textContent = fmt(video.currentTime) + " / " + fmt(dur);
+      }
+      video.addEventListener("timeupdate", ()=>{ if(!isDraggingProgress) renderProgress(); });
+      video.addEventListener("loadedmetadata", renderProgress);
+
+      let isDraggingProgress = false;
+      function seekFromEvent(clientX){
+        const rect = progressTrack.getBoundingClientRect();
+        let pct = (clientX - rect.left) / rect.width;
+        pct = Math.max(0, Math.min(1, pct));
+        if(video.duration) video.currentTime = pct * video.duration;
+        renderProgress();
+      }
+      progressTrack.addEventListener("pointerdown", (e)=>{
+        isDraggingProgress = true;
+        progressTrack.setPointerCapture(e.pointerId);
+        seekFromEvent(e.clientX);
+      });
+      progressTrack.addEventListener("pointermove", (e)=>{ if(isDraggingProgress) seekFromEvent(e.clientX); });
+      progressTrack.addEventListener("pointerup", ()=>{ isDraggingProgress = false; });
+      progressTrack.addEventListener("pointercancel", ()=>{ isDraggingProgress = false; });
+
+      /* ---- single tap = play/pause, double tap left/right = skip 5s ---- */
+      const flashLeft = item.querySelector(".reel-tap-flash.left");
+      const flashRight = item.querySelector(".reel-tap-flash.right");
+      let lastTapTime = 0, lastTapSide = null;
+      const DOUBLE_TAP_DELAY = 300;
+      function getSide(clientX){
+        const rect = video.getBoundingClientRect();
+        return (clientX - rect.left) < rect.width/2 ? "left" : "right";
+      }
+      function skipBy(delta){
+        video.currentTime = Math.max(0, Math.min(video.duration||0, video.currentTime + delta));
+        renderProgress();
+      }
+      function flashSkip(side){
+        const el = side === "right" ? flashRight : flashLeft;
+        el.classList.remove("playing");
+        void el.offsetWidth;
+        el.classList.add("playing");
+      }
+      video.addEventListener("pointerup", (e)=>{
+        if(Math.abs(reelDragDeltaY) >= REEL_TAP_MOVE_TOLERANCE){
+          // Finger actually moved — this was a swipe to change reels, not a
+          // tap, so don't toggle play/pause or show the play/pause icon.
+          return;
+        }
+        const now = Date.now();
+        const side = getSide(e.clientX);
+        if(now - lastTapTime < DOUBLE_TAP_DELAY && side === lastTapSide){
+          lastTapTime = 0; lastTapSide = null;
+          togglePlay(); // undo the immediate toggle the first tap just did
+          const delta = side === "right" ? 5 : -5;
+          skipBy(delta);
+          flashSkip(side);
+        } else {
+          lastTapTime = now; lastTapSide = side;
+          togglePlay(); // fires immediately, inside the tap gesture, so play() is never blocked
+        }
+      });
+
+      /* ---- mute toggle ---- */
+      const muteBtn = item.querySelector(".reel-mute-btn");
+      const volOnIcon = muteBtn.querySelector(".icon-vol-on");
+      const volOffIcon = muteBtn.querySelector(".icon-vol-off");
+      function syncMuteIcon(){
+        volOnIcon.style.display = video.muted ? "none" : "block";
+        volOffIcon.style.display = video.muted ? "block" : "none";
+      }
+      syncMuteIcon();
+      muteBtn.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        video.muted = !video.muted;
+        video.dataset.userMuted = video.muted ? "true" : "false";
+        if(!video.muted) video.play().catch(()=>{});
+        syncMuteIcon();
+      });
+
+      item.querySelector(".like-rail-btn").addEventListener("click", (e)=>{
+        e.stopPropagation();
+        const btn = e.currentTarget;
+        btn.classList.toggle("liked");
+        reel.likes = (reel.likes || 0) + (btn.classList.contains("liked") ? 1 : -1);
+        btn.querySelector(".like-cnt").textContent = reel.likes;
+        updateReel(reel).catch(()=>{});
+      });
+      item.querySelector(".comment-rail-btn").addEventListener("click", (e)=>{
+        e.stopPropagation();
+        openReelCommentSheet(reel, item);
+      });
+      item.querySelector(".share-rail-btn").addEventListener("click", (e)=>{
+        e.stopPropagation();
+        reel.shares = (reel.shares || 0) + 1;
+        item.querySelector(".share-cnt").textContent = reel.shares;
+        updateReel(reel).catch(()=>{});
+        if(navigator.share){
+          navigator.share({ title: reel.title, text: reel.desc || reel.title }).catch(()=>{});
+        }
+      });
+      item.querySelector(".save-rail-btn").addEventListener("click", (e)=>{
+        e.stopPropagation();
+        const btn = e.currentTarget;
+        btn.classList.toggle("saved");
+        reel.saves = (reel.saves || 0) + (btn.classList.contains("saved") ? 1 : -1);
+        btn.querySelector(".save-cnt").textContent = reel.saves;
+        updateReel(reel).catch(()=>{});
+      });
+      item.querySelector(".sound-rail-btn").addEventListener("click", (e)=>{
+        e.stopPropagation();
+        openSoundView(reel);
+      });
+      const followBtn = item.querySelector(".reel-follow-btn");
+      followBtn.addEventListener("click", (e)=>{
+        e.stopPropagation();
+        const nowFollowing = followBtn.classList.toggle("following");
+        followBtn.textContent = nowFollowing ? "Following" : "Follow";
+      });
+      const soundDisc = item.querySelector(".sound-disc-wrap");
+      video.addEventListener("play", ()=> soundDisc.classList.add("spinning"));
+      video.addEventListener("pause", ()=> soundDisc.classList.remove("spinning"));
+
+      reelsTrack.appendChild(item);
+    });
+
+    reelIndex = 0;
+    measureReelHeight();
+    if(focusReelId){
+      const foundIdx = reelItems().findIndex(el => el.dataset.reelId === focusReelId);
+      if(foundIdx !== -1) reelIndex = foundIdx;
+    }
+    setTrackTransform(-reelIndex * reelItemHeight, false);
+    activateReel(reelIndex);
+  }
+
+  reelsView.classList.add("open");
+}
+
+function closeReelsView(){
+  reelsView.classList.remove("open");
+  reelsScroll.querySelectorAll("video").forEach(v => { v.muted = true; v.pause(); });
+}
+
+/* ===================== SOUND VIEW (Original Sound page) ===================== */
+const soundView = document.getElementById("soundView");
+const soundBackBtn = document.getElementById("soundBackBtn");
+const svShareBtn = document.getElementById("svShareBtn");
+const svSearchInput = document.getElementById("svSearchInput");
+const svAvatarInner = document.getElementById("svAvatarInner");
+const svPlayBtn = document.getElementById("svPlayBtn");
+const svPlayIcon = document.getElementById("svPlayIcon");
+const svTitle = document.getElementById("svTitle");
+const svOwner = document.getElementById("svOwner");
+const svCount = document.getElementById("svCount");
+const svSaveBtn = document.getElementById("svSaveBtn");
+const svSaveLabel = document.getElementById("svSaveLabel");
+const svGrid = document.getElementById("svGrid");
+const svUseSoundBtn = document.getElementById("svUseSoundBtn");
+const svAddStoryBtn = document.getElementById("svAddStoryBtn");
+const svAudioPreview = document.getElementById("svAudioPreview");
+
+const SOUND_SAVED_KEY = "goxikSavedSounds";
+function getSavedSoundIds(){
+  try{ return JSON.parse(localStorage.getItem(SOUND_SAVED_KEY) || "[]"); }
+  catch(e){ return []; }
+}
+function setSavedSoundIds(ids){
+  localStorage.setItem(SOUND_SAVED_KEY, JSON.stringify(ids));
+}
+
+let currentSoundCtx = null;
+let svGridUrls = [];
+let svMatches = [];
+
+function svResetPlayState(){
+  svAvatarInner.classList.remove("spinning");
+  svPlayIcon.innerHTML = '<path d="M8 5v14l11-7z"></path>';
+}
+
+function renderSoundGrid(list){
+  svGrid.innerHTML = "";
+  if(!list.length){
+    svGrid.innerHTML = `<div class="sv-empty">এখনো এই সাউন্ড দিয়ে কোনো পোস্ট নেই।</div>`;
+    return;
+  }
+  list.forEach(r=>{
+    const url = URL.createObjectURL(r.blob);
+    svGridUrls.push(url);
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.dataset.reelId = r.id;
+    cell.innerHTML = `<video src="${url}" muted playsinline preload="metadata"></video>`;
+    cell.addEventListener("click", ()=>{
+      const reelId = r.id;
+      closeSoundView();
+      openReelsView(reelId);
+    });
+    svGrid.appendChild(cell);
+  });
+}
+
+async function openSoundView(reel){
+  reelsScroll.querySelectorAll("video").forEach(v => v.pause());
+
+  const { soundId, ownerName } = getEffectiveSound(reel);
+  currentSoundCtx = { soundId, ownerName, sourceBlob: reel.blob };
+
+  svTitle.textContent = "Original Sound";
+  svOwner.textContent = ownerName;
+  svSearchInput.value = "";
+
+  const savedIds = getSavedSoundIds();
+  const isSaved = savedIds.includes(soundId);
+  svSaveBtn.classList.toggle("saved", isSaved);
+  svSaveLabel.textContent = isSaved ? "Saved" : "Save";
+
+  svAudioPreview.pause();
+  svAudioPreview.src = URL.createObjectURL(reel.blob);
+  svResetPlayState();
+
+  const allReels = await getAllReels();
+  svMatches = allReels.filter(r => (r.soundId || r.id) === soundId);
+  svCount.textContent = svMatches.length + (svMatches.length === 1 ? " post" : " posts");
+
+  svGridUrls.forEach(u => URL.revokeObjectURL(u));
+  svGridUrls = [];
+  renderSoundGrid(svMatches);
+
+  svUseSoundBtn.disabled = false;
+  soundView.classList.add("open");
+}
+
+function closeSoundView(){
+  soundView.classList.remove("open");
+  svAudioPreview.pause();
+  svResetPlayState();
+  if(reelsView.classList.contains("open")) activateReel(reelIndex);
+}
+
+soundBackBtn.addEventListener("click", closeSoundView);
+
+svPlayBtn.addEventListener("click", (e)=>{
+  e.stopPropagation();
+  if(svAudioPreview.paused) svAudioPreview.play().catch(()=>{});
+  else svAudioPreview.pause();
+});
+svAudioPreview.addEventListener("play", ()=>{
+  svAvatarInner.classList.add("spinning");
+  svPlayIcon.innerHTML = '<rect x="6" y="5" width="4" height="14"></rect><rect x="14" y="5" width="4" height="14"></rect>';
+});
+svAudioPreview.addEventListener("pause", svResetPlayState);
+svAudioPreview.addEventListener("ended", svResetPlayState);
+
+svSaveBtn.addEventListener("click", ()=>{
+  if(!currentSoundCtx) return;
+  const ids = getSavedSoundIds();
+  const idx = ids.indexOf(currentSoundCtx.soundId);
+  if(idx === -1) ids.push(currentSoundCtx.soundId);
+  else ids.splice(idx, 1);
+  setSavedSoundIds(ids);
+  const isSaved = ids.includes(currentSoundCtx.soundId);
+  svSaveBtn.classList.toggle("saved", isSaved);
+  svSaveLabel.textContent = isSaved ? "Saved" : "Save";
+});
+
+svShareBtn.addEventListener("click", ()=>{
+  if(!currentSoundCtx) return;
+  if(navigator.share){
+    navigator.share({ title: "Original Sound - " + currentSoundCtx.ownerName }).catch(()=>{});
+  }
+});
+
+svSearchInput.addEventListener("input", ()=>{
+  const q = svSearchInput.value.trim().toLowerCase();
+  svGridUrls.forEach(u => URL.revokeObjectURL(u));
+  svGridUrls = [];
+  if(!q){ renderSoundGrid(svMatches); return; }
+  const filtered = svMatches.filter(r =>
+    (r.title||"").toLowerCase().includes(q) ||
+    (r.desc||"").toLowerCase().includes(q) ||
+    (r.tags||"").toLowerCase().includes(q)
+  );
+  renderSoundGrid(filtered);
+});
+
+svAddStoryBtn.addEventListener("click", ()=>{
+  alert("এই ফিচারটি শীঘ্রই আসছে।");
+});
+
+svUseSoundBtn.addEventListener("click", ()=>{
+  if(!currentSoundCtx) return;
+  pendingSoundContext = {
+    soundId: currentSoundCtx.soundId,
+    ownerName: currentSoundCtx.ownerName,
+    sourceBlob: currentSoundCtx.sourceBlob
+  };
+  closeSoundView();
+  closeReelsView();
+  openGalleryPicker();
+});
+
+
+if(mReelsNav) mReelsNav.addEventListener("click", openReelsView);
+dReelsNavs.forEach(el => el.addEventListener("click", (e)=>{ e.preventDefault(); openReelsView(); }));
+reelsBackBtn.addEventListener("click", closeReelsView);
+
+/* ===================== PROFILE VIEW ===================== */
+const profileView = document.getElementById("profileView");
+const profileBackBtn = document.getElementById("profileBackBtn");
+const mAvatarBtn = document.getElementById("mAvatarBtn");
+const pvSetup = document.getElementById("pvSetup");
+const pvMain = document.getElementById("pvMain");
+const pvSetupName = document.getElementById("pvSetupName");
+const pvSetupSaveBtn = document.getElementById("pvSetupSaveBtn");
+const pvName = document.getElementById("pvName");
+const pvHandle = document.getElementById("pvHandle");
+const pvReelsGrid = document.getElementById("pvReelsGrid");
+const pvReelsCount = document.getElementById("pvReelsCount");
+
+async function refreshMyReelsGrid(){
+  const reels = await getAllReels();
+  pvReelsCount.textContent = reels.length;
+  if(!reels.length){
+    pvReelsGrid.innerHTML = `<div class="pv-empty" style="grid-column:1/-1;">এখনো কোনো রিলস নেই।</div>`;
+  } else {
+    pvReelsGrid.innerHTML = "";
+    reels.forEach(reel=>{
+      const url = URL.createObjectURL(reel.blob);
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.innerHTML = `<video src="${url}" muted playsinline></video>${reel.visibility==="private" ? '<svg class="lock" viewBox="0 0 24 24" fill="#fff"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="#fff" stroke-width="2"/></svg>' : ""}`;
+      pvReelsGrid.appendChild(cell);
+    });
+  }
+}
+
+async function openProfileView(){
+  const profile = getSavedProfile();
+  if(profile && profile.name){
+    pvSetup.style.display = "none";
+    pvMain.style.display = "block";
+    pvName.textContent = profile.name;
+    pvHandle.textContent = "@" + profile.name.toLowerCase().replace(/\s+/g, "_");
+    await refreshMyReelsGrid();
+  } else {
+    pvSetup.style.display = "block";
+    pvMain.style.display = "none";
+    pvSetupName.value = "";
+  }
+  profileView.classList.add("open");
+}
+function closeProfileView(){ profileView.classList.remove("open"); }
+
+pvSetupSaveBtn.addEventListener("click", async ()=>{
+  const name = pvSetupName.value.trim();
+  if(!name){
+    alert("প্রোফাইল সেভ করতে নাম লিখুন।");
+    return;
+  }
+  localStorage.setItem(GOXIK_PROFILE_KEY, JSON.stringify({ name }));
+  pvSetup.style.display = "none";
+  pvMain.style.display = "block";
+  pvName.textContent = name;
+  pvHandle.textContent = "@" + name.toLowerCase().replace(/\s+/g, "_");
+  await refreshMyReelsGrid();
+});
+
+if(mAvatarBtn) mAvatarBtn.addEventListener("click", openProfileView);
+profileBackBtn.addEventListener("click", closeProfileView);
+</script>
+</body>
+</html>
