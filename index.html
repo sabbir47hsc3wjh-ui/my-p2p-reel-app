@@ -1330,9 +1330,6 @@ document.querySelectorAll(".m-composer, .d-composer").forEach(el=>{
   el.addEventListener("click", composeAndPublishText);
 });
 
-watchGlobalReels();
-watchGlobalTexts();
-
 const hamburgerBtn = document.getElementById("hamburgerBtn");
 const drawer = document.getElementById("drawer");
 const overlay = document.getElementById("overlay");
@@ -2487,6 +2484,10 @@ pvSetupSaveBtn.addEventListener("click", async ()=>{
 
 if(mAvatarBtn) mAvatarBtn.addEventListener("click", openProfileView);
 profileBackBtn.addEventListener("click", closeProfileView);
+
+/* Start listening for globally-published reels/texts now that everything above is defined. */
+watchGlobalReels();
+watchGlobalTexts();
 </script>
 </body>
 </html>
